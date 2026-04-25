@@ -882,10 +882,10 @@ function renderSessionDetail(d) {
           Apps <span class="tab-badge">${countApps(d)}</span>
         </div>
         <div class="tab ${activeTab==='policies'?'active':''}" onclick="switchTab('policies')">
-          Policies <span class="tab-badge">${(d.NodeCachePolicies||[]).length}</span>
+          Policies <span class="tab-badge">${toArr(d.NodeCachePolicies).length}</span>
         </div>
         <div class="tab ${activeTab==='events'?'active':''}" onclick="switchTab('events')">
-          Events <span class="tab-badge">${(d.Events||[]).length}</span>
+          Events <span class="tab-badge">${toArr(d.Events).length}</span>
         </div>
         <div class="tab ${activeTab==='perf'?'active':''}" onclick="switchTab('perf')">Performance</div>
       </div>
@@ -916,17 +916,17 @@ function renderOverview(d) {
     <div class="stat-row">
       <div class="stat-card">
         <div class="stat-card-label">Win32 Apps</div>
-        <div class="stat-card-value">${(d.SidecarWin32Apps||[]).length}</div>
+        <div class="stat-card-value">${toArr(d.SidecarWin32Apps).length}</div>
         <div class="stat-card-sub">ESP tracked</div>
       </div>
       <div class="stat-card">
         <div class="stat-card-label">Policies</div>
-        <div class="stat-card-value">${(d.NodeCachePolicies||[]).length}</div>
+        <div class="stat-card-value">${toArr(d.NodeCachePolicies).length}</div>
         <div class="stat-card-sub">NodeCache</div>
       </div>
       <div class="stat-card">
         <div class="stat-card-label">Events</div>
-        <div class="stat-card-value">${(d.Events||[]).length}</div>
+        <div class="stat-card-value">${toArr(d.Events).length}</div>
         <div class="stat-card-sub">All sources</div>
       </div>
       <div class="stat-card">
@@ -1028,13 +1028,21 @@ function renderPhaseCard(name, phase) {
     </div>`;
 }
 
+// Normalize PowerShell JSON output - single items come as objects, not arrays
+function toArr(val) {
+  if (!val) return [];
+  if (Array.isArray(val)) return val;
+  if (typeof val === 'object') return [val];
+  return [];
+}
+
 // ============================================================
 // APPS TAB
 // ============================================================
 function renderApps(d) {
-  const sidecarApps  = d.SidecarWin32Apps || [];
-  const imeReporting = d.IMEReporting || [];
-  const msiApps      = d.MSIApps || [];
+  const sidecarApps  = toArr(d.SidecarWin32Apps);
+  const imeReporting = toArr(d.IMEReporting);
+  const msiApps      = toArr(d.MSIApps);
   const espDiag      = d.ESPDiagnostics || {};
 
   // Merge Sidecar + IME reporting
@@ -1134,7 +1142,7 @@ function renderApps(d) {
 // POLICIES TAB
 // ============================================================
 function renderPolicies(d) {
-  const policies = d.NodeCachePolicies || [];
+  const policies = toArr(d.NodeCachePolicies);
   if (!policies.length) return '<div class="no-data">No policies in NodeCache. Will populate during enrollment.</div>';
 
   return `
@@ -1169,7 +1177,7 @@ function filterPolicy(val) {
 // EVENTS TAB
 // ============================================================
 function renderEvents(d) {
-  const events = d.Events || [];
+  const events = toArr(d.Events);
   if (!events.length) return '<div class="no-data">No events collected.</div>';
 
   const sources = [...new Set(events.map(e => e.Source))];
@@ -1336,7 +1344,7 @@ function getOverallStatus(d) {
 }
 
 function countApps(d) {
-  return (d.SidecarWin32Apps||[]).length + (d.MSIApps||[]).length;
+  return toArr(d.SidecarWin32Apps).length + toArr(d.MSIApps).length;
 }
 
 function kv(label, value) {
