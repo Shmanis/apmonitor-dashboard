@@ -1,0 +1,1399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Autopilot Monitor — Inhouse</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:        #0a0c10;
+  --bg2:       #0f1218;
+  --bg3:       #151a22;
+  --bg4:       #1c2330;
+  --border:    #1f2d3d;
+  --border2:   #2a3a4f;
+  --text:      #c8d6e5;
+  --text2:     #7a90a8;
+  --text3:     #4a5f74;
+  --accent:    #3b82f6;
+  --accent2:   #1d4ed8;
+  --green:     #22c55e;
+  --yellow:    #f59e0b;
+  --red:       #ef4444;
+  --orange:    #f97316;
+  --purple:    #a855f7;
+  --cyan:      #06b6d4;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-sans: 'Syne', sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* TOPBAR */
+.topbar {
+  height: 52px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.topbar-logo {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.topbar-logo span {
+  color: var(--accent);
+}
+
+.topbar-divider { width: 1px; height: 24px; background: var(--border); }
+
+.topbar-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text2);
+}
+
+.pulse {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.topbar-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+
+.btn-refresh {
+  background: var(--bg4);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  padding: 5px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  transition: all 0.15s;
+}
+
+.btn-refresh:hover { background: var(--border2); color: #fff; }
+
+.last-refresh { font-size: 10px; color: var(--text3); }
+
+/* LAYOUT */
+.layout {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* SIDEBAR */
+.sidebar {
+  width: 300px;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.sidebar-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sidebar-title {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.session-count {
+  font-size: 10px;
+  color: var(--text3);
+  background: var(--bg3);
+  padding: 2px 6px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+
+.sidebar-search {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sidebar-search input {
+  width: 100%;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  outline: none;
+}
+
+.sidebar-search input:focus { border-color: var(--accent); }
+.sidebar-search input::placeholder { color: var(--text3); }
+
+.session-list {
+  overflow-y: auto;
+  flex: 1;
+}
+
+.session-list::-webkit-scrollbar { width: 4px; }
+.session-list::-webkit-scrollbar-track { background: transparent; }
+.session-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+.session-item {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.1s;
+  position: relative;
+}
+
+.session-item:hover { background: var(--bg3); }
+.session-item.active { background: var(--bg4); border-left: 2px solid var(--accent); }
+
+.session-item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.session-device {
+  font-weight: 500;
+  color: #fff;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 160px;
+}
+
+.badge {
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-success  { background: rgba(34,197,94,0.15);  color: var(--green); }
+.badge-progress { background: rgba(59,130,246,0.15); color: var(--accent); }
+.badge-error    { background: rgba(239,68,68,0.15);  color: var(--red); }
+.badge-unknown  { background: rgba(120,144,168,0.15); color: var(--text2); }
+.badge-test     { background: rgba(168,85,247,0.15); color: var(--purple); }
+
+.session-serial {
+  font-size: 10px;
+  color: var(--text3);
+  margin-bottom: 4px;
+  font-family: var(--font-mono);
+}
+
+.session-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--text3);
+}
+
+.session-time { color: var(--text2); }
+
+/* MAIN */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.empty-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--text3);
+}
+
+.empty-icon {
+  width: 48px; height: 48px;
+  border: 2px solid var(--border2);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.empty-state h3 { font-family: var(--font-sans); font-size: 14px; color: var(--text2); }
+.empty-state p  { font-size: 11px; }
+
+/* SESSION DETAIL */
+.session-detail { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+.detail-header {
+  padding: 14px 20px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.detail-device-name {
+  font-family: var(--font-sans);
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.detail-meta {
+  font-size: 11px;
+  color: var(--text2);
+  display: flex;
+  gap: 16px;
+}
+
+.detail-meta span { display: flex; align-items: center; gap: 4px; }
+
+/* TABS */
+.tabs {
+  display: flex;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  padding: 0 20px;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.tab {
+  padding: 10px 16px;
+  font-size: 11px;
+  color: var(--text2);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+  font-weight: 500;
+  position: relative;
+}
+
+.tab:hover { color: var(--text); }
+
+.tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px; height: 16px;
+  background: var(--bg4);
+  border-radius: 8px;
+  font-size: 9px;
+  margin-left: 5px;
+  color: var(--text3);
+}
+
+/* TAB CONTENT */
+.tab-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.tab-content::-webkit-scrollbar { width: 6px; }
+.tab-content::-webkit-scrollbar-track { background: transparent; }
+.tab-content::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* CARDS */
+.card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.card-header {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg3);
+}
+
+.card-title {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.card-body { padding: 16px; }
+
+/* GRID */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+
+/* KV ROWS */
+.kv-row {
+  display: flex;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+  align-items: flex-start;
+}
+
+.kv-row:last-child { border-bottom: none; }
+
+.kv-key {
+  width: 160px;
+  flex-shrink: 0;
+  color: var(--text3);
+  font-size: 11px;
+}
+
+.kv-val {
+  color: var(--text);
+  font-size: 11px;
+  word-break: break-all;
+}
+
+/* PHASE CARDS */
+.phase-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+
+.phase-card {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 14px;
+}
+
+.phase-card.succeeded { border-left: 3px solid var(--green); }
+.phase-card.inProgress { border-left: 3px solid var(--accent); }
+.phase-card.failed { border-left: 3px solid var(--red); }
+.phase-card.notStarted { border-left: 3px solid var(--text3); }
+
+.phase-name {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 6px;
+}
+
+.phase-status {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+
+.phase-status.succeeded  { color: var(--green); }
+.phase-status.inProgress { color: var(--accent); }
+.phase-status.failed     { color: var(--red); }
+.phase-status.notStarted { color: var(--text3); }
+
+.subcategory {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 5px 0;
+  border-top: 1px solid var(--border);
+  font-size: 10px;
+}
+
+.sub-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+.sub-dot.succeeded  { background: var(--green); }
+.sub-dot.inProgress { background: var(--accent); }
+.sub-dot.failed     { background: var(--red); }
+.sub-dot.notStarted { background: var(--text3); }
+
+.sub-info { flex: 1; }
+.sub-name  { color: var(--text2); margin-bottom: 2px; }
+.sub-text  { color: var(--text3); font-size: 9px; line-height: 1.4; }
+
+/* APP TABLE */
+.app-table { width: 100%; border-collapse: collapse; }
+
+.app-table th {
+  text-align: left;
+  padding: 8px 12px;
+  font-size: 10px;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg3);
+}
+
+.app-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  vertical-align: middle;
+}
+
+.app-table tr:last-child td { border-bottom: none; }
+.app-table tr:hover td { background: var(--bg3); }
+
+.app-guid {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text3);
+  margin-top: 2px;
+  word-break: break-all;
+}
+
+/* STATE PILL */
+.state-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.state-pill::before {
+  content: '';
+  width: 5px; height: 5px;
+  border-radius: 50%;
+}
+
+.state-Completed  { background: rgba(34,197,94,0.12);  color: var(--green);  }
+.state-Completed::before  { background: var(--green); }
+.state-InProgress { background: rgba(59,130,246,0.12); color: var(--accent); }
+.state-InProgress::before { background: var(--accent); }
+.state-Error      { background: rgba(239,68,68,0.12);  color: var(--red);    }
+.state-Error::before      { background: var(--red); }
+.state-NotInstalled { background: rgba(120,144,168,0.12); color: var(--text2); }
+.state-NotInstalled::before { background: var(--text2); }
+.state-Failed     { background: rgba(239,68,68,0.12);  color: var(--red);    }
+.state-Failed::before     { background: var(--red); }
+.state-Unknown    { background: rgba(120,144,168,0.12); color: var(--text3); }
+.state-Unknown::before    { background: var(--text3); }
+
+/* EVENTS */
+.event-list { display: flex; flex-direction: column; gap: 2px; }
+
+.event-item {
+  display: grid;
+  grid-template-columns: 140px 70px 80px 40px 1fr;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 4px;
+  font-size: 10px;
+  align-items: start;
+  border-left: 2px solid transparent;
+}
+
+.event-item:hover { background: var(--bg3); }
+.event-item.error   { border-left-color: var(--red);    background: rgba(239,68,68,0.04); }
+.event-item.warning { border-left-color: var(--yellow); background: rgba(245,158,11,0.04); }
+.event-item.info    { border-left-color: var(--border); }
+
+.event-time   { color: var(--text3); font-family: var(--font-mono); }
+.event-source { color: var(--cyan);  }
+.event-level  { }
+.event-id     { color: var(--text3); }
+.event-msg    { color: var(--text);  line-height: 1.5; word-break: break-word; }
+
+.level-error   { color: var(--red); }
+.level-warning { color: var(--yellow); }
+.level-info    { color: var(--text2); }
+
+/* POLICY TABLE */
+.policy-table { width: 100%; border-collapse: collapse; }
+
+.policy-table th {
+  text-align: left;
+  padding: 8px 12px;
+  font-size: 10px;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg3);
+}
+
+.policy-table td {
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--text2);
+  vertical-align: middle;
+}
+
+.policy-table tr:hover td { background: var(--bg3); color: var(--text); }
+
+/* PERF CHART */
+.perf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+
+.perf-stat {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.perf-stat-label { font-size: 10px; color: var(--text3); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+.perf-stat-value { font-family: var(--font-sans); font-size: 28px; font-weight: 800; color: #fff; }
+.perf-stat-unit  { font-size: 12px; color: var(--text2); font-family: var(--font-mono); }
+
+canvas { width: 100% !important; }
+
+/* STAT CARDS ROW */
+.stat-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 16px; }
+
+.stat-card {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px 14px;
+}
+
+.stat-card-label { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+.stat-card-value { font-family: var(--font-sans); font-size: 20px; font-weight: 700; color: #fff; }
+.stat-card-sub   { font-size: 9px; color: var(--text3); margin-top: 2px; }
+
+/* LOADING */
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  height: 200px;
+  color: var(--text3);
+}
+
+.spinner {
+  width: 24px; height: 24px;
+  border: 2px solid var(--border2);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* FILTER ROW */
+.filter-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  padding: 4px 10px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  color: var(--text2);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  cursor: pointer;
+  transition: all 0.1s;
+}
+
+.filter-btn:hover, .filter-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+.no-data { color: var(--text3); font-size: 11px; padding: 20px; text-align: center; }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-logo">⬡ <span>AP</span>Monitor <span style="color:var(--text3);font-size:11px;font-weight:400;margin-left:4px;">Inhouse</span></div>
+  <div class="topbar-divider"></div>
+  <div class="topbar-status">
+    <div class="pulse" id="statusDot"></div>
+    <span id="statusText">Connecting...</span>
+  </div>
+  <div class="topbar-right">
+    <span class="last-refresh" id="lastRefresh"></span>
+    <button class="btn-refresh" onclick="loadSessions()">↺ Refresh</button>
+  </div>
+</div>
+
+<!-- LAYOUT -->
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <span class="sidebar-title">Sessions</span>
+      <span class="session-count" id="sessionCount">0</span>
+    </div>
+    <div class="sidebar-search">
+      <input type="text" id="searchInput" placeholder="Search device / serial..." oninput="filterSessions()">
+    </div>
+    <div class="session-list" id="sessionList">
+      <div class="loading"><div class="spinner"></div><span>Loading sessions...</span></div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main" id="mainArea">
+    <div class="empty-state">
+      <div class="empty-icon">📡</div>
+      <h3>No session selected</h3>
+      <p>Select a session from the sidebar to view details</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ============================================================
+// CONFIGURATION
+// ============================================================
+const SAS_URL = "https://intuneautomation1.blob.core.windows.net/autopilot-sessions?sp=rcwl&st=2026-04-24T14:54:25Z&se=2027-04-23T23:09:25Z&spr=https&sv=2025-11-05&sr=c&sig=1IULqUuMZAYxzDK7Js3%2F2UKdRk%2B0%2FQIdPVS4kzq8D34%3D";
+const CONTAINER_BASE = "https://intuneautomation1.blob.core.windows.net/autopilot-sessions";
+const AUTO_REFRESH_MS = 30000;
+
+// ============================================================
+// STATE
+// ============================================================
+let allSessions   = [];
+let currentData   = null;
+let activeBlob    = null;
+let refreshTimer  = null;
+let activeTab     = 'overview';
+let eventFilter   = 'all';
+let policyFilter  = '';
+
+// ============================================================
+// BLOB LISTING
+// ============================================================
+function getSasQuery() {
+  return SAS_URL.split('?')[1];
+}
+
+async function loadSessions() {
+  try {
+    const listUrl = `${CONTAINER_BASE}?restype=container&comp=list&${getSasQuery()}`;
+    const res = await fetch(listUrl);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const xml  = await res.text();
+    const parser = new DOMParser();
+    const doc  = parser.parseFromString(xml, 'text/xml');
+    const blobs = Array.from(doc.querySelectorAll('Blob'));
+
+    allSessions = blobs.map(b => ({
+      name:         b.querySelector('Name')?.textContent || '',
+      size:         parseInt(b.querySelector('Content-Length')?.textContent || '0'),
+      lastModified: b.querySelector('Last-Modified')?.textContent || '',
+      data:         null
+    })).sort((a,b) => new Date(b.lastModified) - new Date(a.lastModified));
+
+    document.getElementById('sessionCount').textContent = allSessions.length;
+    updateStatus(true, `${allSessions.length} sessions`);
+    renderSessionList();
+    updateLastRefresh();
+
+    // Reload active session data if one is selected
+    if (activeBlob) {
+      const session = allSessions.find(s => s.name === activeBlob);
+      if (session) loadSessionData(session);
+    }
+
+    // Schedule next refresh
+    clearTimeout(refreshTimer);
+    refreshTimer = setTimeout(loadSessions, AUTO_REFRESH_MS);
+
+  } catch (err) {
+    updateStatus(false, `Error: ${err.message}`);
+    document.getElementById('sessionList').innerHTML = `<div class="no-data">Failed to load sessions<br><small>${err.message}</small></div>`;
+  }
+}
+
+async function loadSessionData(session) {
+  activeBlob = session.name;
+  renderSessionList(); // re-render to highlight active
+
+  const main = document.getElementById('mainArea');
+  main.innerHTML = `<div class="loading"><div class="spinner"></div><span>Loading session data...</span></div>`;
+
+  try {
+    const blobUrl = `${CONTAINER_BASE}/${session.name}?${getSasQuery()}`;
+    const res = await fetch(blobUrl);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    currentData = await res.json();
+    renderSessionDetail(currentData);
+  } catch (err) {
+    main.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠</div><h3>Failed to load session</h3><p>${err.message}</p></div>`;
+  }
+}
+
+// ============================================================
+// SESSION LIST RENDER
+// ============================================================
+function filterSessions() {
+  renderSessionList();
+}
+
+function renderSessionList() {
+  const query   = document.getElementById('searchInput').value.toLowerCase();
+  const filtered = allSessions.filter(s =>
+    !query || s.name.toLowerCase().includes(query)
+  );
+
+  if (!filtered.length) {
+    document.getElementById('sessionList').innerHTML = '<div class="no-data">No sessions found</div>';
+    return;
+  }
+
+  document.getElementById('sessionList').innerHTML = filtered.map(session => {
+    const isTest   = session.name.startsWith('TEST-');
+    const isActive = session.name === activeBlob;
+    const d        = session.data;
+    const device   = d?.Device?.DeviceName || session.name.replace('.json','').substring(0,20);
+    const serial   = d?.Device?.SerialNumber || '—';
+    const status   = getOverallStatus(d);
+    const ts       = formatTime(session.lastModified);
+    const size     = `${(session.size/1024).toFixed(0)} KB`;
+
+    let badgeClass = 'badge-unknown';
+    let badgeText  = 'Unknown';
+    if (isTest)                { badgeClass = 'badge-test';     badgeText = 'Test'; }
+    else if (status === 'complete') { badgeClass = 'badge-success';  badgeText = 'Done'; }
+    else if (status === 'active')   { badgeClass = 'badge-progress'; badgeText = 'Live'; }
+    else if (status === 'failed')   { badgeClass = 'badge-error';    badgeText = 'Failed'; }
+
+    return `
+      <div class="session-item ${isActive?'active':''}" onclick="loadSessionData(${JSON.stringify({name:session.name,size:session.size,lastModified:session.lastModified,data:null}).replace(/"/g,'&quot;')})">
+        <div class="session-item-header">
+          <div class="session-device">${device}</div>
+          <span class="badge ${badgeClass}">${badgeText}</span>
+        </div>
+        <div class="session-serial">${serial}</div>
+        <div class="session-meta">
+          <span class="session-time">${ts}</span>
+          <span>${size}</span>
+        </div>
+      </div>`;
+  }).join('');
+
+  // Re-attach click handlers properly
+  document.querySelectorAll('.session-item').forEach((el, i) => {
+    el.addEventListener('click', () => loadSessionData(filtered[i]));
+  });
+}
+
+// ============================================================
+// SESSION DETAIL RENDER
+// ============================================================
+function renderSessionDetail(d) {
+  const main = document.getElementById('mainArea');
+  const device = d.Device || {};
+  const status = getOverallStatus(d);
+
+  main.innerHTML = `
+    <div class="session-detail">
+      <div class="detail-header">
+        <div>
+          <div class="detail-device-name">${device.DeviceName || 'Unknown Device'}</div>
+          <div class="detail-meta">
+            <span>📋 ${device.SerialNumber || '—'}</span>
+            <span>🏢 ${device.TenantDomain || '—'}</span>
+            <span>💻 ${device.Model || '—'}</span>
+            <span>⏱ ${d.DurationSeconds ? formatDuration(d.DurationSeconds) : '—'}</span>
+            ${d.IsTestRun ? '<span style="color:var(--purple)">🧪 Test Run</span>' : ''}
+          </div>
+        </div>
+        <div style="margin-left:auto;">
+          ${renderBadgeLarge(status)}
+        </div>
+      </div>
+
+      <div class="tabs">
+        <div class="tab ${activeTab==='overview'?'active':''}" onclick="switchTab('overview')">Overview</div>
+        <div class="tab ${activeTab==='apps'?'active':''}" onclick="switchTab('apps')">
+          Apps <span class="tab-badge">${countApps(d)}</span>
+        </div>
+        <div class="tab ${activeTab==='policies'?'active':''}" onclick="switchTab('policies')">
+          Policies <span class="tab-badge">${(d.NodeCachePolicies||[]).length}</span>
+        </div>
+        <div class="tab ${activeTab==='events'?'active':''}" onclick="switchTab('events')">
+          Events <span class="tab-badge">${(d.Events||[]).length}</span>
+        </div>
+        <div class="tab ${activeTab==='perf'?'active':''}" onclick="switchTab('perf')">Performance</div>
+      </div>
+
+      <div class="tab-content">
+        <div class="tab-panel ${activeTab==='overview'?'active':''}" id="tab-overview">${renderOverview(d)}</div>
+        <div class="tab-panel ${activeTab==='apps'?'active':''}" id="tab-apps">${renderApps(d)}</div>
+        <div class="tab-panel ${activeTab==='policies'?'active':''}" id="tab-policies">${renderPolicies(d)}</div>
+        <div class="tab-panel ${activeTab==='events'?'active':''}" id="tab-events">${renderEvents(d)}</div>
+        <div class="tab-panel ${activeTab==='perf'?'active':''}" id="tab-perf">${renderPerf(d)}</div>
+      </div>
+    </div>`;
+
+  if (activeTab === 'perf') renderPerfChart(d);
+}
+
+// ============================================================
+// OVERVIEW TAB
+// ============================================================
+function renderOverview(d) {
+  const dev = d.Device || {};
+  const phases = d.ESPPhases || {};
+  const firstSync = d.EnrollmentFirstSync || {};
+  const sidecar = d.SidecarInstallState || {};
+
+  return `
+    <!-- STAT ROW -->
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-card-label">Win32 Apps</div>
+        <div class="stat-card-value">${(d.SidecarWin32Apps||[]).length}</div>
+        <div class="stat-card-sub">ESP tracked</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">Policies</div>
+        <div class="stat-card-value">${(d.NodeCachePolicies||[]).length}</div>
+        <div class="stat-card-sub">NodeCache</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">Events</div>
+        <div class="stat-card-value">${(d.Events||[]).length}</div>
+        <div class="stat-card-sub">All sources</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">Sidecar</div>
+        <div class="stat-card-value" style="font-size:14px;padding-top:4px;">${sidecar.InstallationState||'—'}</div>
+        <div class="stat-card-sub">IME state</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">Provisioning</div>
+        <div class="stat-card-value" style="font-size:14px;padding-top:4px;">${firstSync.IsServerProvisioningDone===1?'Done':'Pending'}</div>
+        <div class="stat-card-sub">FirstSync</div>
+      </div>
+    </div>
+
+    <!-- ESP PHASES -->
+    <div class="card">
+      <div class="card-header"><span class="card-title">ESP Phases</span></div>
+      <div class="card-body">
+        <div class="phase-grid">
+          ${renderPhaseCard('Device Preparation', phases.DevicePreparation)}
+          ${renderPhaseCard('Device Setup', phases.DeviceSetup)}
+          ${renderPhaseCard('Account Setup', phases.AccountSetup)}
+        </div>
+      </div>
+    </div>
+
+    <!-- DEVICE INFO -->
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header"><span class="card-title">Device</span></div>
+        <div class="card-body">
+          ${kv('Name',        dev.DeviceName)}
+          ${kv('Serial',      dev.SerialNumber)}
+          ${kv('Manufacturer',dev.Manufacturer)}
+          ${kv('Model',       dev.Model)}
+          ${kv('OS',          dev.OSCaption)}
+          ${kv('Build',       dev.OSBuild)}
+          ${kv('CPU',         dev.CPUName)}
+          ${kv('RAM',         dev.TotalRAMGB ? dev.TotalRAMGB + ' GB' : '—')}
+          ${kv('Disk (C:)',   dev.DiskTotalGB ? dev.DiskTotalGB + ' GB total / ' + dev.DiskFreeGB + ' GB free' : '—')}
+          ${kv('Uptime',      dev.UptimeHours ? dev.UptimeHours + ' hrs' : '—')}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Enrollment</span></div>
+        <div class="card-body">
+          ${kv('Entra Device ID',  dev.EntraDeviceId || '—')}
+          ${kv('Tenant ID',        dev.TenantId || '—')}
+          ${kv('Tenant Domain',    dev.TenantDomain || '—')}
+          ${kv('Enrollment GUID',  dev.EnrollmentGuid || '—')}
+          ${kv('Tenant Matched',   dev.TenantMatched !== undefined ? String(dev.TenantMatched) : '—')}
+          ${kv('Provisioning Done',firstSync.IsServerProvisioningDone===1?'Yes':'No')}
+          ${kv('Skip Device Page', firstSync.SkipDeviceStatusPage!==undefined?String(firstSync.SkipDeviceStatusPage):'—')}
+          ${kv('Skip User Page',   firstSync.SkipUserStatusPage!==undefined?String(firstSync.SkipUserStatusPage):'—')}
+          ${kv('Session ID',       d.SessionId || '—')}
+          ${kv('Schema Version',   d.SchemaVersion || '—')}
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderPhaseCard(name, phase) {
+  if (!phase) return `<div class="phase-card notStarted"><div class="phase-name">${name}</div><div class="phase-status notStarted">Not Started</div></div>`;
+
+  let phaseObj = phase;
+  // Parse if it's a JSON string
+  if (typeof phase.Status === 'string' && phase.Status.startsWith('{')) {
+    try { phaseObj = { ...phase, _parsed: JSON.parse(phase.Status) }; } catch(e) {}
+  }
+
+  // Also check if Status itself is parsed JSON object
+  const parsed = phaseObj._parsed || (typeof phaseObj.Status === 'object' ? phaseObj.Status : null);
+  const catState = parsed?.categoryState || phaseObj.Status || 'unknown';
+
+  let subcats = '';
+  if (parsed) {
+    Object.keys(parsed).forEach(k => {
+      if (k === 'categoryState' || k === 'categoryStatusText') return;
+      const sub = parsed[k];
+      if (typeof sub === 'object' && sub.subcategoryState) {
+        const subName = k.split('.').pop().replace('Subcategory','').replace(/([A-Z])/g,' $1').trim();
+        subcats += `
+          <div class="subcategory">
+            <div class="sub-dot ${sub.subcategoryState}"></div>
+            <div class="sub-info">
+              <div class="sub-name">${subName}</div>
+              <div class="sub-text">${sub.subcategoryStatusText||''}</div>
+            </div>
+          </div>`;
+      }
+    });
+  }
+
+  return `
+    <div class="phase-card ${catState}">
+      <div class="phase-name">${name}</div>
+      <div class="phase-status ${catState}">${catState}</div>
+      ${subcats}
+    </div>`;
+}
+
+// ============================================================
+// APPS TAB
+// ============================================================
+function renderApps(d) {
+  const sidecarApps  = d.SidecarWin32Apps || [];
+  const imeReporting = d.IMEReporting || [];
+  const msiApps      = d.MSIApps || [];
+  const espDiag      = d.ESPDiagnostics || {};
+
+  // Merge Sidecar + IME reporting
+  const win32 = sidecarApps.map(app => {
+    const report = imeReporting.find(r => r.AppId === app.AppGuid) || {};
+    return { ...app, ComplianceState: report.ComplianceState, EnforcementState: report.EnforcementState };
+  });
+
+  let html = '';
+
+  // Win32 Apps
+  if (win32.length) {
+    html += `
+      <div class="card">
+        <div class="card-header"><span class="card-title">Win32 Apps — ESP Tracked (${win32.length})</span></div>
+        <table class="app-table">
+          <thead><tr>
+            <th>App GUID</th>
+            <th>State</th>
+            <th>HResult</th>
+            <th>Snapshots</th>
+          </tr></thead>
+          <tbody>
+            ${win32.map(a => `
+              <tr>
+                <td>
+                  <div style="color:var(--text);font-size:11px;">Win32 App</div>
+                  <div class="app-guid">${a.AppGuid}</div>
+                  <div style="font-size:9px;color:var(--text3);margin-top:2px;">
+                    <a href="https://intune.microsoft.com/#view/Microsoft_Intune_Apps/SettingsMenu/~/0/appId/${a.AppGuid}" target="_blank" style="color:var(--accent);text-decoration:none;">Open in Intune ↗</a>
+                  </div>
+                </td>
+                <td><span class="state-pill state-${a.InstallationState||'Unknown'}">${a.InstallationState||'Unknown'}</span></td>
+                <td style="color:${a.HResult?'var(--red)':'var(--text3)'};">${a.HResult||'—'}</td>
+                <td style="color:var(--text3);">${(a.Snapshots||[]).length}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>`;
+  }
+
+  // MSI Apps
+  if (msiApps.length) {
+    html += `
+      <div class="card">
+        <div class="card-header"><span class="card-title">LOB / MSI Apps (${msiApps.length})</span></div>
+        <table class="app-table">
+          <thead><tr><th>Product Code</th><th>Display Name</th><th>Status</th><th>Last Error</th></tr></thead>
+          <tbody>
+            ${msiApps.map(a => `
+              <tr>
+                <td><div class="app-guid">${a.ProductCode}</div></td>
+                <td>${a.DisplayName||'—'}</td>
+                <td>${a.Status!==undefined?a.Status:'—'}</td>
+                <td style="color:${a.LastError?'var(--red)':'var(--text3)'};">${a.LastError||'—'}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>`;
+  }
+
+  // ESP Diagnostics
+  const diagSections = [
+    { key:'Certificates', label:'Certificates' },
+    { key:'WiFiProfiles',  label:'Wi-Fi Profiles' },
+    { key:'StoreApps',     label:'Store Apps' },
+    { key:'Policies',      label:'Tracked Policies' },
+    { key:'MSIApps',       label:'MSI (Diag)' }
+  ];
+
+  diagSections.forEach(sec => {
+    const items = espDiag[sec.key] || [];
+    if (!items.length) return;
+    html += `
+      <div class="card">
+        <div class="card-header"><span class="card-title">${sec.label} — ESP Diagnostics (${items.length})</span></div>
+        <table class="app-table">
+          <thead><tr><th>Item ID</th><th>Type</th><th>Status</th><th>Timestamp</th></tr></thead>
+          <tbody>
+            ${items.map(i => `
+              <tr>
+                <td><div class="app-guid">${i.ItemId}</div></td>
+                <td>${i.Type}</td>
+                <td><span class="state-pill state-${i.Installed?'Completed':'NotInstalled'}">${i.Installed?'Installed':'Not Installed'}</span></td>
+                <td style="color:var(--text3);font-size:10px;">${i.Timestamp||'—'}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>`;
+  });
+
+  if (!html) html = '<div class="no-data">No app data collected. This will populate during Autopilot enrollment.</div>';
+  return html;
+}
+
+// ============================================================
+// POLICIES TAB
+// ============================================================
+function renderPolicies(d) {
+  const policies = d.NodeCachePolicies || [];
+  if (!policies.length) return '<div class="no-data">No policies in NodeCache. Will populate during enrollment.</div>';
+
+  return `
+    <div style="margin-bottom:10px;display:flex;gap:8px;align-items:center;">
+      <input type="text" placeholder="Filter by URI..." oninput="filterPolicy(this.value)"
+        style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:4px;font-family:var(--font-mono);font-size:11px;outline:none;width:300px;">
+      <span style="color:var(--text3);font-size:11px;">${policies.length} total policies</span>
+    </div>
+    <div class="card">
+      <table class="policy-table" id="policyTable">
+        <thead><tr><th>Node ID</th><th>Node URI (CSP Path)</th><th>Cached Value</th></tr></thead>
+        <tbody>
+          ${policies.map(p => `
+            <tr>
+              <td style="color:var(--text3);width:80px;">${p.NodeId}</td>
+              <td style="color:var(--cyan);">${escHtml(p.NodeUri||'—')}</td>
+              <td style="color:var(--text2);max-width:200px;overflow:hidden;text-overflow:ellipsis;">${escHtml(String(p.CachedValue||'—').substring(0,80))}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function filterPolicy(val) {
+  const rows = document.querySelectorAll('#policyTable tbody tr');
+  rows.forEach(r => {
+    r.style.display = r.textContent.toLowerCase().includes(val.toLowerCase()) ? '' : 'none';
+  });
+}
+
+// ============================================================
+// EVENTS TAB
+// ============================================================
+function renderEvents(d) {
+  const events = d.Events || [];
+  if (!events.length) return '<div class="no-data">No events collected.</div>';
+
+  const sources = [...new Set(events.map(e => e.Source))];
+
+  return `
+    <div class="filter-row">
+      <button class="filter-btn ${eventFilter==='all'?'active':''}" onclick="setEventFilter('all')">All (${events.length})</button>
+      ${sources.map(s => `<button class="filter-btn ${eventFilter===s?'active':''}" onclick="setEventFilter('${s}')">${s} (${events.filter(e=>e.Source===s).length})</button>`).join('')}
+      <button class="filter-btn ${eventFilter==='errors'?'active':''}" onclick="setEventFilter('errors')">Errors Only</button>
+    </div>
+    <div class="event-list" id="eventList">
+      ${renderEventItems(events)}
+    </div>`;
+}
+
+function renderEventItems(events) {
+  let filtered = events;
+  if (eventFilter !== 'all' && eventFilter !== 'errors') {
+    filtered = events.filter(e => e.Source === eventFilter);
+  } else if (eventFilter === 'errors') {
+    filtered = events.filter(e => e.Level === 'Error' || e.Level === 'Critical');
+  }
+
+  if (!filtered.length) return '<div class="no-data">No events match this filter.</div>';
+
+  return filtered.map(e => {
+    const level = e.Level || '';
+    const cls = level==='Error'||level==='Critical' ? 'error' : level==='Warning' ? 'warning' : 'info';
+    const lvlCls = level==='Error'||level==='Critical' ? 'level-error' : level==='Warning' ? 'level-warning' : 'level-info';
+    return `
+      <div class="event-item ${cls}">
+        <span class="event-time">${formatDateTime(e.TimeCreated)}</span>
+        <span class="event-source">${e.Source||'—'}</span>
+        <span class="event-level ${lvlCls}">${level||'Info'}</span>
+        <span class="event-id">${e.EventId||''}</span>
+        <span class="event-msg">${escHtml(e.Message||'')}</span>
+      </div>`;
+  }).join('');
+}
+
+function setEventFilter(f) {
+  eventFilter = f;
+  if (currentData) {
+    document.getElementById('eventList').innerHTML = renderEventItems(currentData.Events||[]);
+    document.querySelectorAll('.filter-btn').forEach(b => {
+      b.classList.toggle('active', b.textContent.startsWith(f==='all'?'All':f==='errors'?'Error':f));
+    });
+  }
+}
+
+// ============================================================
+// PERFORMANCE TAB
+// ============================================================
+function renderPerf(d) {
+  const perf = d.PerformanceNow || d.Performance || {};
+  const history = d.PerformanceHistory || [];
+
+  return `
+    <div class="perf-grid">
+      <div class="perf-stat">
+        <div class="perf-stat-label">CPU Usage</div>
+        <div class="perf-stat-value">${perf.CPUPercent !== null && perf.CPUPercent !== undefined ? perf.CPUPercent : '—'}<span class="perf-stat-unit"> %</span></div>
+      </div>
+      <div class="perf-stat">
+        <div class="perf-stat-label">RAM Usage</div>
+        <div class="perf-stat-value">${perf.RAMPercent !== null && perf.RAMPercent !== undefined ? perf.RAMPercent : '—'}<span class="perf-stat-unit"> %</span></div>
+      </div>
+    </div>
+    <div class="perf-grid">
+      <div class="perf-stat">
+        <div class="perf-stat-label">RAM Used</div>
+        <div class="perf-stat-value">${perf.RAMUsedGB||'—'}<span class="perf-stat-unit"> GB</span></div>
+      </div>
+      <div class="perf-stat">
+        <div class="perf-stat-label">RAM Total</div>
+        <div class="perf-stat-value">${perf.RAMTotalGB||'—'}<span class="perf-stat-unit"> GB</span></div>
+      </div>
+    </div>
+    ${history.length > 1 ? `
+    <div class="card">
+      <div class="card-header"><span class="card-title">Performance History (${history.length} snapshots)</span></div>
+      <div class="card-body">
+        <canvas id="perfChart" height="120"></canvas>
+      </div>
+    </div>` : '<div class="no-data">Performance history available only during live enrollment (30s intervals).</div>'}`;
+}
+
+function renderPerfChart(d) {
+  const history = d.PerformanceHistory || [];
+  if (history.length < 2) return;
+  const canvas = document.getElementById('perfChart');
+  if (!canvas) return;
+
+  const W = canvas.offsetWidth || 600;
+  const H = 120;
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  const labels = history.map((h,i) => i);
+  const cpuData = history.map(h => h.CPUPercent || 0);
+  const ramData = history.map(h => h.RAMPercent || 0);
+
+  const drawLine = (data, color) => {
+    ctx.beginPath();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.5;
+    data.forEach((v, i) => {
+      const x = (i / (data.length-1)) * W;
+      const y = H - (v / 100) * H;
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+
+    // Fill
+    ctx.beginPath();
+    data.forEach((v, i) => {
+      const x = (i / (data.length-1)) * W;
+      const y = H - (v / 100) * H;
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    });
+    ctx.lineTo(W, H); ctx.lineTo(0, H);
+    ctx.fillStyle = color.replace(')', ',0.08)').replace('rgb','rgba');
+    ctx.fill();
+  };
+
+  // Grid lines
+  ctx.strokeStyle = '#1f2d3d';
+  ctx.lineWidth = 1;
+  [25,50,75].forEach(v => {
+    const y = H - (v/100)*H;
+    ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke();
+    ctx.fillStyle = '#4a5f74';
+    ctx.font = '9px JetBrains Mono';
+    ctx.fillText(v+'%', 4, y-2);
+  });
+
+  drawLine(cpuData, 'rgb(59,130,246)');
+  drawLine(ramData, 'rgb(34,197,94)');
+
+  // Legend
+  ctx.fillStyle = 'rgb(59,130,246)'; ctx.fillRect(W-120, 8, 8, 8);
+  ctx.fillStyle = '#c8d6e5'; ctx.font = '10px JetBrains Mono'; ctx.fillText('CPU', W-108, 16);
+  ctx.fillStyle = 'rgb(34,197,94)'; ctx.fillRect(W-60, 8, 8, 8);
+  ctx.fillStyle = '#c8d6e5'; ctx.fillText('RAM', W-48, 16);
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+function switchTab(tab) {
+  activeTab = tab;
+  if (currentData) renderSessionDetail(currentData);
+}
+
+function getOverallStatus(d) {
+  if (!d) return 'unknown';
+  if (d.IsTestRun) return 'test';
+  if (d.EnrollmentComplete) return 'complete';
+  const phases = d.ESPPhases || {};
+  const dp = typeof phases.DevicePreparation?.Status === 'string' ? phases.DevicePreparation.Status : '';
+  if (dp.includes('failed') || dp.includes('error')) return 'failed';
+  if (d.DurationSeconds > 0) return 'active';
+  return 'unknown';
+}
+
+function countApps(d) {
+  return (d.SidecarWin32Apps||[]).length + (d.MSIApps||[]).length;
+}
+
+function kv(label, value) {
+  return `<div class="kv-row"><div class="kv-key">${label}</div><div class="kv-val">${escHtml(String(value||'—'))}</div></div>`;
+}
+
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function formatTime(ts) {
+  if (!ts) return '—';
+  try {
+    const d = new Date(ts);
+    return d.toLocaleString('en-GB',{month:'short',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+  } catch { return ts; }
+}
+
+function formatDateTime(ts) {
+  if (!ts) return '—';
+  try {
+    const d = new Date(ts);
+    return d.toLocaleString('en-GB',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  } catch { return ts; }
+}
+
+function formatDuration(sec) {
+  if (!sec) return '—';
+  const m = Math.floor(sec/60), s = sec%60;
+  return m > 0 ? `${m}m ${s}s` : `${s}s`;
+}
+
+function renderBadgeLarge(status) {
+  const map = {
+    complete: ['badge-success','Complete'],
+    active:   ['badge-progress','Live'],
+    failed:   ['badge-error','Failed'],
+    test:     ['badge-test','Test Run'],
+    unknown:  ['badge-unknown','Unknown']
+  };
+  const [cls, label] = map[status] || map.unknown;
+  return `<span class="badge ${cls}" style="font-size:11px;padding:4px 10px;">${label}</span>`;
+}
+
+function updateStatus(ok, msg) {
+  document.getElementById('statusDot').style.background = ok ? 'var(--green)' : 'var(--red)';
+  document.getElementById('statusText').textContent = msg;
+}
+
+function updateLastRefresh() {
+  document.getElementById('lastRefresh').textContent = 'Updated ' + new Date().toLocaleTimeString();
+}
+
+// ============================================================
+// INIT
+// ============================================================
+loadSessions();
+</script>
+</body>
+</html>
