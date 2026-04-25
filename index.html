@@ -3,1404 +3,1034 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Autopilot Monitor — Inhouse</title>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<title>APMonitor Inhouse</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg:        #0a0c10;
-  --bg2:       #0f1218;
-  --bg3:       #151a22;
-  --bg4:       #1c2330;
-  --border:    #1f2d3d;
-  --border2:   #2a3a4f;
-  --text:      #c8d6e5;
-  --text2:     #7a90a8;
-  --text3:     #4a5f74;
-  --accent:    #3b82f6;
-  --accent2:   #1d4ed8;
-  --green:     #22c55e;
-  --yellow:    #f59e0b;
-  --red:       #ef4444;
-  --orange:    #f97316;
-  --purple:    #a855f7;
-  --cyan:      #06b6d4;
-  --font-mono: 'JetBrains Mono', monospace;
-  --font-sans: 'Syne', sans-serif;
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --blue:#2563eb;--blue-dark:#1d4ed8;--blue-light:#eff6ff;--blue-mid:#bfdbfe;
+  --green:#16a34a;--green-light:#f0fdf4;--green-mid:#bbf7d0;
+  --red:#dc2626;--red-light:#fef2f2;
+  --yellow:#d97706;--yellow-light:#fffbeb;
+  --purple:#7c3aed;--purple-light:#f5f3ff;
+  --gray:#6b7280;
+  --bg:#f9fafb;--white:#fff;
+  --border:#e5e7eb;--border2:#d1d5db;
+  --text:#111827;--text2:#6b7280;--text3:#9ca3af;
+  --sidebar-w:240px;--nav-h:56px;
+  --font:'Inter',sans-serif;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.05);
+  --shadow:0 1px 3px rgba(0,0,0,.1),0 1px 2px rgba(0,0,0,.06);
+  --shadow-md:0 4px 6px rgba(0,0,0,.07),0 2px 4px rgba(0,0,0,.05);
+  --radius:8px;
 }
-
-* { margin: 0; padding: 0; box-sizing: border-box; }
-
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--font-mono);
-  font-size: 13px;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-/* TOPBAR */
-.topbar {
-  height: 52px;
-  background: var(--bg2);
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  padding: 0 20px;
-  gap: 16px;
-  flex-shrink: 0;
-}
-
-.topbar-logo {
-  font-family: var(--font-sans);
-  font-size: 16px;
-  font-weight: 800;
-  color: #fff;
-  letter-spacing: -0.5px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.topbar-logo span {
-  color: var(--accent);
-}
-
-.topbar-divider { width: 1px; height: 24px; background: var(--border); }
-
-.topbar-status {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11px;
-  color: var(--text2);
-}
-
-.pulse {
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: var(--green);
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
-}
-
-.topbar-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
-
-.btn-refresh {
-  background: var(--bg4);
-  border: 1px solid var(--border2);
-  color: var(--text);
-  padding: 5px 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  transition: all 0.15s;
-}
-
-.btn-refresh:hover { background: var(--border2); color: #fff; }
-
-.last-refresh { font-size: 10px; color: var(--text3); }
-
-/* LAYOUT */
-.layout {
-  display: flex;
-  flex: 1;
-  overflow: hidden;
-}
-
-/* SIDEBAR */
-.sidebar {
-  width: 300px;
-  background: var(--bg2);
-  border-right: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  flex-shrink: 0;
-}
-
-.sidebar-header {
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.sidebar-title {
-  font-family: var(--font-sans);
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text2);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.session-count {
-  font-size: 10px;
-  color: var(--text3);
-  background: var(--bg3);
-  padding: 2px 6px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-}
-
-.sidebar-search {
-  padding: 8px 12px;
-  border-bottom: 1px solid var(--border);
-}
-
-.sidebar-search input {
-  width: 100%;
-  background: var(--bg3);
-  border: 1px solid var(--border);
-  color: var(--text);
-  padding: 6px 10px;
-  border-radius: 4px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  outline: none;
-}
-
-.sidebar-search input:focus { border-color: var(--accent); }
-.sidebar-search input::placeholder { color: var(--text3); }
-
-.session-list {
-  overflow-y: auto;
-  flex: 1;
-}
-
-.session-list::-webkit-scrollbar { width: 4px; }
-.session-list::-webkit-scrollbar-track { background: transparent; }
-.session-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
-
-.session-item {
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--border);
-  cursor: pointer;
-  transition: background 0.1s;
-  position: relative;
-}
-
-.session-item:hover { background: var(--bg3); }
-.session-item.active { background: var(--bg4); border-left: 2px solid var(--accent); }
-
-.session-item-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 4px;
-}
-
-.session-device {
-  font-weight: 500;
-  color: #fff;
-  font-size: 12px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 160px;
-}
-
-.badge {
-  font-size: 9px;
-  padding: 2px 6px;
-  border-radius: 3px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.badge-success  { background: rgba(34,197,94,0.15);  color: var(--green); }
-.badge-progress { background: rgba(59,130,246,0.15); color: var(--accent); }
-.badge-error    { background: rgba(239,68,68,0.15);  color: var(--red); }
-.badge-unknown  { background: rgba(120,144,168,0.15); color: var(--text2); }
-.badge-test     { background: rgba(168,85,247,0.15); color: var(--purple); }
-
-.session-serial {
-  font-size: 10px;
-  color: var(--text3);
-  margin-bottom: 4px;
-  font-family: var(--font-mono);
-}
-
-.session-meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 10px;
-  color: var(--text3);
-}
-
-.session-time { color: var(--text2); }
-
-/* MAIN */
-.main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.empty-state {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  color: var(--text3);
-}
-
-.empty-icon {
-  width: 48px; height: 48px;
-  border: 2px solid var(--border2);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-}
-
-.empty-state h3 { font-family: var(--font-sans); font-size: 14px; color: var(--text2); }
-.empty-state p  { font-size: 11px; }
-
-/* SESSION DETAIL */
-.session-detail { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-
-.detail-header {
-  padding: 14px 20px;
-  background: var(--bg2);
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-shrink: 0;
-}
-
-.detail-device-name {
-  font-family: var(--font-sans);
-  font-size: 18px;
-  font-weight: 700;
-  color: #fff;
-}
-
-.detail-meta {
-  font-size: 11px;
-  color: var(--text2);
-  display: flex;
-  gap: 16px;
-}
-
-.detail-meta span { display: flex; align-items: center; gap: 4px; }
-
-/* TABS */
-.tabs {
-  display: flex;
-  background: var(--bg2);
-  border-bottom: 1px solid var(--border);
-  padding: 0 20px;
-  gap: 2px;
-  flex-shrink: 0;
-}
-
-.tab {
-  padding: 10px 16px;
-  font-size: 11px;
-  color: var(--text2);
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  transition: all 0.15s;
-  font-weight: 500;
-  position: relative;
-}
-
-.tab:hover { color: var(--text); }
-
-.tab.active {
-  color: var(--accent);
-  border-bottom-color: var(--accent);
-}
-
-.tab-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 16px; height: 16px;
-  background: var(--bg4);
-  border-radius: 8px;
-  font-size: 9px;
-  margin-left: 5px;
-  color: var(--text3);
-}
-
-/* TAB CONTENT */
-.tab-content {
-  flex: 1;
-  overflow-y: auto;
-  padding: 20px;
-}
-
-.tab-content::-webkit-scrollbar { width: 6px; }
-.tab-content::-webkit-scrollbar-track { background: transparent; }
-.tab-content::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
-
-.tab-panel { display: none; }
-.tab-panel.active { display: block; }
-
-/* CARDS */
-.card {
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  margin-bottom: 16px;
-  overflow: hidden;
-}
-
-.card-header {
-  padding: 10px 16px;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: var(--bg3);
-}
-
-.card-title {
-  font-family: var(--font-sans);
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text2);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.card-body { padding: 16px; }
-
-/* GRID */
-.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
-.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-
-/* KV ROWS */
-.kv-row {
-  display: flex;
-  padding: 6px 0;
-  border-bottom: 1px solid var(--border);
-  align-items: flex-start;
-}
-
-.kv-row:last-child { border-bottom: none; }
-
-.kv-key {
-  width: 160px;
-  flex-shrink: 0;
-  color: var(--text3);
-  font-size: 11px;
-}
-
-.kv-val {
-  color: var(--text);
-  font-size: 11px;
-  word-break: break-all;
-}
-
-/* PHASE CARDS */
-.phase-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
-
-.phase-card {
-  background: var(--bg3);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 14px;
-}
-
-.phase-card.succeeded { border-left: 3px solid var(--green); }
-.phase-card.inProgress { border-left: 3px solid var(--accent); }
-.phase-card.failed { border-left: 3px solid var(--red); }
-.phase-card.notStarted { border-left: 3px solid var(--text3); }
-
-.phase-name {
-  font-family: var(--font-sans);
-  font-size: 12px;
-  font-weight: 700;
-  color: #fff;
-  margin-bottom: 6px;
-}
-
-.phase-status {
-  font-size: 10px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 12px;
-}
-
-.phase-status.succeeded  { color: var(--green); }
-.phase-status.inProgress { color: var(--accent); }
-.phase-status.failed     { color: var(--red); }
-.phase-status.notStarted { color: var(--text3); }
-
-.subcategory {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  padding: 5px 0;
-  border-top: 1px solid var(--border);
-  font-size: 10px;
-}
-
-.sub-dot {
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  margin-top: 3px;
-}
-
-.sub-dot.succeeded  { background: var(--green); }
-.sub-dot.inProgress { background: var(--accent); }
-.sub-dot.failed     { background: var(--red); }
-.sub-dot.notStarted { background: var(--text3); }
-
-.sub-info { flex: 1; }
-.sub-name  { color: var(--text2); margin-bottom: 2px; }
-.sub-text  { color: var(--text3); font-size: 9px; line-height: 1.4; }
-
-/* APP TABLE */
-.app-table { width: 100%; border-collapse: collapse; }
-
-.app-table th {
-  text-align: left;
-  padding: 8px 12px;
-  font-size: 10px;
-  color: var(--text3);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  border-bottom: 1px solid var(--border);
-  background: var(--bg3);
-}
-
-.app-table td {
-  padding: 10px 12px;
-  border-bottom: 1px solid var(--border);
-  font-size: 11px;
-  vertical-align: middle;
-}
-
-.app-table tr:last-child td { border-bottom: none; }
-.app-table tr:hover td { background: var(--bg3); }
-
-.app-guid {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  color: var(--text3);
-  margin-top: 2px;
-  word-break: break-all;
-}
-
-/* STATE PILL */
-.state-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 3px 8px;
-  border-radius: 4px;
-  font-size: 10px;
-  font-weight: 600;
-}
-
-.state-pill::before {
-  content: '';
-  width: 5px; height: 5px;
-  border-radius: 50%;
-}
-
-.state-Completed  { background: rgba(34,197,94,0.12);  color: var(--green);  }
-.state-Completed::before  { background: var(--green); }
-.state-InProgress { background: rgba(59,130,246,0.12); color: var(--accent); }
-.state-InProgress::before { background: var(--accent); }
-.state-Error      { background: rgba(239,68,68,0.12);  color: var(--red);    }
-.state-Error::before      { background: var(--red); }
-.state-NotInstalled { background: rgba(120,144,168,0.12); color: var(--text2); }
-.state-NotInstalled::before { background: var(--text2); }
-.state-Failed     { background: rgba(239,68,68,0.12);  color: var(--red);    }
-.state-Failed::before     { background: var(--red); }
-.state-Unknown    { background: rgba(120,144,168,0.12); color: var(--text3); }
-.state-Unknown::before    { background: var(--text3); }
-
-/* EVENTS */
-.event-list { display: flex; flex-direction: column; gap: 2px; }
-
-.event-item {
-  display: grid;
-  grid-template-columns: 140px 70px 80px 40px 1fr;
-  gap: 8px;
-  padding: 7px 10px;
-  border-radius: 4px;
-  font-size: 10px;
-  align-items: start;
-  border-left: 2px solid transparent;
-}
-
-.event-item:hover { background: var(--bg3); }
-.event-item.error   { border-left-color: var(--red);    background: rgba(239,68,68,0.04); }
-.event-item.warning { border-left-color: var(--yellow); background: rgba(245,158,11,0.04); }
-.event-item.info    { border-left-color: var(--border); }
-
-.event-time   { color: var(--text3); font-family: var(--font-mono); }
-.event-source { color: var(--cyan);  }
-.event-level  { }
-.event-id     { color: var(--text3); }
-.event-msg    { color: var(--text);  line-height: 1.5; word-break: break-word; }
-
-.level-error   { color: var(--red); }
-.level-warning { color: var(--yellow); }
-.level-info    { color: var(--text2); }
-
-/* POLICY TABLE */
-.policy-table { width: 100%; border-collapse: collapse; }
-
-.policy-table th {
-  text-align: left;
-  padding: 8px 12px;
-  font-size: 10px;
-  color: var(--text3);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  border-bottom: 1px solid var(--border);
-  background: var(--bg3);
-}
-
-.policy-table td {
-  padding: 7px 12px;
-  border-bottom: 1px solid var(--border);
-  font-size: 10px;
-  font-family: var(--font-mono);
-  color: var(--text2);
-  vertical-align: middle;
-}
-
-.policy-table tr:hover td { background: var(--bg3); color: var(--text); }
-
-/* PERF CHART */
-.perf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
-
-.perf-stat {
-  background: var(--bg3);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 16px;
-}
-
-.perf-stat-label { font-size: 10px; color: var(--text3); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
-.perf-stat-value { font-family: var(--font-sans); font-size: 28px; font-weight: 800; color: #fff; }
-.perf-stat-unit  { font-size: 12px; color: var(--text2); font-family: var(--font-mono); }
-
-canvas { width: 100% !important; }
-
-/* STAT CARDS ROW */
-.stat-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 16px; }
-
-.stat-card {
-  background: var(--bg3);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 12px 14px;
-}
-
-.stat-card-label { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
-.stat-card-value { font-family: var(--font-sans); font-size: 20px; font-weight: 700; color: #fff; }
-.stat-card-sub   { font-size: 9px; color: var(--text3); margin-top: 2px; }
-
-/* LOADING */
-.loading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  height: 200px;
-  color: var(--text3);
-}
-
-.spinner {
-  width: 24px; height: 24px;
-  border: 2px solid var(--border2);
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin { to { transform: rotate(360deg); } }
-
-/* FILTER ROW */
-.filter-row {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
-  flex-wrap: wrap;
-}
-
-.filter-btn {
-  padding: 4px 10px;
-  border-radius: 4px;
-  border: 1px solid var(--border);
-  background: var(--bg3);
-  color: var(--text2);
-  font-family: var(--font-mono);
-  font-size: 10px;
-  cursor: pointer;
-  transition: all 0.1s;
-}
-
-.filter-btn:hover, .filter-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-
-.no-data { color: var(--text3); font-size: 11px; padding: 20px; text-align: center; }
-
-/* SCROLLBAR */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+body{font-family:var(--font);font-size:14px;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+
+/* ─── TOPNAV ─────────────────────────────────────────── */
+.topnav{position:fixed;top:0;left:0;right:0;height:var(--nav-h);background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:16px;z-index:100;box-shadow:var(--shadow-sm)}
+.nav-logo{display:flex;align-items:center;gap:10px;width:var(--sidebar-w);flex-shrink:0}
+.nav-logo-icon{width:32px;height:32px;background:var(--blue);border-radius:8px;display:flex;align-items:center;justify-content:center}
+.nav-logo-icon svg{width:18px;height:18px;fill:#fff}
+.nav-logo-text{font-size:16px;font-weight:700;color:var(--blue)}
+.nav-search{flex:1;max-width:480px;position:relative}
+.nav-search input{width:100%;padding:7px 14px 7px 36px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13px;color:var(--text);background:var(--bg);outline:none}
+.nav-search input:focus{border-color:var(--blue);background:var(--white)}
+.nav-search input::placeholder{color:var(--text3)}
+.nav-search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text3)}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.nav-btn{width:34px;height:34px;border-radius:8px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2)}
+.nav-btn:hover{background:var(--bg)}
+.nav-avatar{width:32px;height:32px;border-radius:50%;background:var(--blue);color:#fff;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.nav-status{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);padding:0 8px}
+.status-dot{width:7px;height:7px;border-radius:50%;background:var(--green)}
+.status-dot.err{background:var(--red)}
+
+/* ─── SIDEBAR ─────────────────────────────────────────── */
+.sidebar{position:fixed;left:0;top:var(--nav-h);bottom:0;width:var(--sidebar-w);background:var(--white);border-right:1px solid var(--border);overflow-y:auto;z-index:90;padding-bottom:20px}
+.sidebar::-webkit-scrollbar{width:0}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;border-radius:6px;margin:1px 8px;transition:all .15s;text-decoration:none}
+.nav-item:hover{background:var(--bg);color:var(--text)}
+.nav-item.active{background:var(--blue-light);color:var(--blue)}
+.nav-item svg{width:16px;height:16px;flex-shrink:0}
+.nav-section{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;padding:12px 24px 4px}
+.nav-divider{height:1px;background:var(--border);margin:8px 16px}
+
+/* ─── MAIN ─────────────────────────────────────────────── */
+.main{margin-left:var(--sidebar-w);margin-top:var(--nav-h);min-height:calc(100vh - var(--nav-h));padding:24px}
+
+/* ─── PAGES ─────────────────────────────────────────────── */
+.page{display:none}
+.page.active{display:block}
+
+/* ─── STATS CARDS ───────────────────────────────────────── */
+.stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px}
+.stat-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:16px;display:flex;align-items:flex-start;gap:14px;box-shadow:var(--shadow-sm)}
+.stat-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.stat-icon svg{width:22px;height:22px}
+.stat-icon.blue{background:var(--blue);color:#fff}
+.stat-icon.green{background:var(--green);color:#fff}
+.stat-icon.purple{background:var(--purple);color:#fff}
+.stat-icon.indigo{background:#4f46e5;color:#fff}
+.stat-icon.red{background:var(--red);color:#fff}
+.stat-icon svg{fill:#fff}
+.stat-info{}
+.stat-label{font-size:12px;color:var(--text2);margin-bottom:3px}
+.stat-value{font-size:22px;font-weight:700;color:var(--text);line-height:1}
+.stat-sub{font-size:11px;color:var(--text3);margin-top:3px}
+
+/* ─── SESSION TABLE ─────────────────────────────────────── */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.section-title{font-size:18px;font-weight:700;color:var(--text)}
+.section-actions{display:flex;align-items:center;gap:8px}
+
+.table-search{width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius);font-family:var(--font);font-size:13px;color:var(--text);background:var(--bg);outline:none;margin-bottom:12px}
+.table-search:focus{border-color:var(--blue);background:var(--white)}
+.table-search::placeholder{color:var(--text3)}
+
+.status-filters{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.sf-btn{padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid;transition:all .15s}
+.sf-btn.green{background:var(--green-light);color:var(--green);border-color:var(--green-mid)}
+.sf-btn.blue{background:var(--blue-light);color:var(--blue);border-color:var(--blue-mid)}
+.sf-btn.yellow{background:var(--yellow-light);color:var(--yellow);border-color:#fde68a}
+.sf-btn.orange{background:#fff7ed;color:#ea580c;border-color:#fed7aa}
+.sf-btn.red{background:var(--red-light);color:var(--red);border-color:#fecaca}
+
+.sessions-table{width:100%;border-collapse:collapse;background:var(--white);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-sm)}
+.sessions-table th{text-align:left;padding:11px 16px;font-size:12px;font-weight:600;color:var(--text2);border-bottom:1px solid var(--border);background:var(--bg);user-select:none;cursor:pointer;white-space:nowrap}
+.sessions-table th:hover{color:var(--text)}
+.sessions-table td{padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle}
+.sessions-table tr:last-child td{border-bottom:none}
+.sessions-table tr:hover td{background:#fafafa;cursor:pointer}
+.td-device{font-weight:600;color:var(--text)}
+.td-serial{font-size:11px;color:var(--text3);font-family:monospace;margin-top:2px}
+.td-model{color:var(--text2)}
+
+/* ─── BADGES / CHIPS ─────────────────────────────────────── */
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;white-space:nowrap}
+.badge-green{background:var(--green-light);color:var(--green)}
+.badge-blue{background:var(--blue-light);color:var(--blue)}
+.badge-red{background:var(--red-light);color:var(--red)}
+.badge-yellow{background:var(--yellow-light);color:var(--yellow)}
+.badge-purple{background:var(--purple-light);color:var(--purple)}
+.badge-gray{background:#f3f4f6;color:var(--gray)}
+
+/* ─── SESSION DETAIL ─────────────────────────────────────── */
+.back-btn{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--blue);cursor:pointer;margin-bottom:18px;padding:6px 0;font-weight:500;background:none;border:none}
+.back-btn:hover{text-decoration:underline}
+.back-btn svg{width:14px;height:14px}
+
+/* Session Info Card */
+.sess-info-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;margin-bottom:16px;box-shadow:var(--shadow-sm)}
+.sess-info-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--border);border-radius:6px;overflow:hidden}
+.sess-info-cell{padding:14px 16px;border-right:1px solid var(--border)}
+.sess-info-cell:last-child,.sess-info-cell:nth-child(4){border-right:none}
+.sess-info-cell:nth-child(n+5){border-top:1px solid var(--border)}
+.sic-label{font-size:12px;color:var(--text2);margin-bottom:5px}
+.sic-value{font-size:14px;font-weight:600;color:var(--text);word-break:break-word}
+
+/* Collapsible section */
+.coll-section{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px;box-shadow:var(--shadow-sm);overflow:hidden}
+.coll-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;cursor:pointer;user-select:none}
+.coll-header:hover{background:#fafafa}
+.coll-title{font-size:16px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:10px}
+.coll-title svg{width:18px;height:18px;color:var(--text2)}
+.coll-chevron{color:var(--text3);transition:transform .2s;font-size:16px}
+.coll-chevron.open{transform:rotate(180deg)}
+.coll-body{padding:16px 20px;border-top:1px solid var(--border);display:none}
+.coll-body.open{display:block}
+
+/* Device Details KV */
+.dd-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 32px}
+.dd-row{display:flex;padding:6px 0;border-bottom:1px solid var(--border)}
+.dd-row:last-child{border-bottom:none}
+.dd-key{width:180px;flex-shrink:0;font-size:12px;color:var(--text2)}
+.dd-val{font-size:12px;color:var(--text);word-break:break-all}
+
+/* ─── ENROLLMENT STEPPER ─────────────────────────────────── */
+.stepper-wrap{padding:8px 0 16px;overflow-x:auto}
+.stepper{display:flex;align-items:flex-start;min-width:600px}
+.step{flex:1;display:flex;flex-direction:column;align-items:center;position:relative}
+.step-line{position:absolute;top:20px;left:50%;right:-50%;height:3px;background:var(--border2);z-index:0}
+.step-line.done{background:var(--green)}
+.step:last-child .step-line{display:none}
+.step-circle{width:40px;height:40px;border-radius:50%;border:3px solid var(--border2);background:var(--white);display:flex;align-items:center;justify-content:center;font-size:16px;z-index:1;position:relative;transition:all .3s}
+.step-circle.done{border-color:var(--green);background:var(--green);color:#fff}
+.step-circle.active{border-color:var(--blue);background:var(--white);color:var(--blue);box-shadow:0 0 0 4px var(--blue-mid)}
+.step-circle.error{border-color:var(--red);background:var(--red);color:#fff}
+.step-circle.pending{border-color:var(--border2)}
+.step-label{font-size:11px;font-weight:600;color:var(--text2);margin-top:8px;text-align:center;line-height:1.3}
+.step-label.done{color:var(--green)}
+.step-label.active{color:var(--blue)}
+.step-dur{font-size:10px;color:var(--text3);margin-top:3px;text-align:center}
+
+/* ─── PERF METRICS ───────────────────────────────────────── */
+.perf-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.perf-card{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:14px}
+.perf-label{font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.perf-value{font-size:20px;font-weight:700;color:var(--text)}
+.perf-value.warn{color:var(--yellow)}
+.perf-value.bad{color:var(--red)}
+.perf-sparkline{margin-top:6px;height:36px}
+
+/* ─── SCRIPTS ────────────────────────────────────────────── */
+.script-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.script-row:last-child{border-bottom:none}
+.script-badges{display:flex;gap:6px}
+.script-name{flex:1;font-size:13px;font-weight:500;color:var(--text)}
+.script-exit{font-size:12px;color:var(--text2)}
+.script-detail-btn{font-size:12px;color:var(--blue);cursor:pointer;font-weight:500;background:none;border:none;padding:2px 8px;border-radius:4px}
+.script-detail-btn:hover{background:var(--blue-light)}
+
+/* ─── PROGRESS ROWS ──────────────────────────────────────── */
+.prog-row{padding:12px 0;border-bottom:1px solid var(--border)}
+.prog-row:last-child{border-bottom:none}
+.prog-row-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.prog-app-name{font-size:13px;font-weight:600;color:var(--text)}
+.prog-status{font-size:12px;color:var(--text2)}
+.prog-bar{height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;border-radius:3px;transition:width .3s}
+.prog-fill.done{background:var(--green)}
+.prog-fill.inprog{background:var(--blue)}
+.prog-fill.err{background:var(--red)}
+.prog-sub{display:flex;justify-content:space-between;margin-top:4px;font-size:11px;color:var(--text3)}
+
+/* ─── EVENT TIMELINE ─────────────────────────────────────── */
+.evt-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.evt-search{flex:1;min-width:160px;padding:7px 12px;border:1px solid var(--border);border-radius:6px;font-family:var(--font);font-size:12px;outline:none;background:var(--bg)}
+.evt-search:focus{border-color:var(--blue);background:var(--white)}
+.sev-filter{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid transparent;background:var(--bg);color:var(--text2);transition:all .1s}
+.sev-filter:hover{background:var(--border)}
+.sev-filter.active-info{background:var(--blue-light);color:var(--blue);border-color:var(--blue-mid)}
+.sev-filter.active-warning{background:var(--yellow-light);color:var(--yellow);border-color:#fde68a}
+.sev-filter.active-error{background:var(--red-light);color:var(--red);border-color:#fecaca}
+.sev-filter.active-critical{background:#7f1d1d;color:#fff;border-color:#7f1d1d}
+
+.evt-phase-group{margin-bottom:8px;background:var(--white);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-sm)}
+.evt-phase-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;cursor:pointer;background:var(--bg)}
+.evt-phase-header:hover{background:var(--border)}
+.evt-phase-title{font-size:14px;font-weight:700;color:var(--text)}
+.evt-phase-chevron{color:var(--text3);font-size:14px;transition:transform .2s}
+.evt-phase-chevron.open{transform:rotate(180deg)}
+
+.evt-card{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-top:1px solid var(--border);border-left:4px solid transparent;cursor:pointer;transition:background .1s}
+.evt-card:hover{background:#fafafa}
+.evt-card.sev-Info{border-left-color:transparent}
+.evt-card.sev-Warning{border-left-color:var(--yellow);background:var(--yellow-light)}
+.evt-card.sev-Error{border-left-color:var(--red);background:var(--red-light)}
+.evt-card.sev-Critical{border-left-color:#7f1d1d;background:#fef2f2}
+.evt-card.sev-Debug{border-left-color:var(--border2)}
+
+.evt-time{font-size:11px;color:var(--text3);font-family:monospace;white-space:nowrap;margin-top:1px;min-width:76px}
+.evt-sev{display:inline-flex;align-items:center;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;white-space:nowrap;flex-shrink:0}
+.evt-sev.Info{background:var(--blue-light);color:var(--blue)}
+.evt-sev.Warning{background:var(--yellow-light);color:var(--yellow)}
+.evt-sev.Error{background:var(--red-light);color:var(--red)}
+.evt-sev.Critical{background:#7f1d1d;color:#fff}
+.evt-sev.Debug{background:var(--bg);color:var(--text3)}
+.evt-type{font-size:13px;font-weight:700;color:var(--text)}
+.evt-msg{font-size:12px;color:var(--text2);margin-top:2px}
+.evt-meta{font-size:11px;color:var(--text3);margin-top:3px}
+.evt-details{margin-left:auto;flex-shrink:0;font-size:12px;color:var(--blue);cursor:pointer;font-weight:500;padding:2px 6px;border-radius:4px;border:none;background:none;white-space:nowrap}
+.evt-details:hover{background:var(--blue-light)}
+
+/* event detail modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;display:none;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--white);border-radius:var(--radius);width:600px;max-width:95vw;max-height:85vh;display:flex;flex-direction:column;box-shadow:var(--shadow-md)}
+.modal-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-size:15px;font-weight:700;color:var(--text)}
+.modal-close{background:none;border:none;font-size:18px;color:var(--text3);cursor:pointer;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:4px}
+.modal-close:hover{background:var(--bg)}
+.modal-body{padding:20px;overflow-y:auto;flex:1}
+.modal-json{background:#1e293b;color:#e2e8f0;border-radius:6px;padding:14px;font-size:11px;font-family:monospace;white-space:pre-wrap;word-break:break-all;overflow-y:auto;max-height:400px}
+
+/* loading */
+.loading-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:60px;color:var(--text3)}
+.spinner{width:24px;height:24px;border:2px solid var(--border2);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* tip bar */
+.tip-bar{background:var(--blue-light);border:1px solid var(--blue-mid);border-radius:var(--radius);padding:10px 16px;font-size:13px;color:var(--blue);margin-bottom:20px;display:flex;align-items:center;gap:8px}
+
+.no-data{text-align:center;padding:32px;color:var(--text3);font-size:13px}
+a{text-decoration:none}
 </style>
 </head>
 <body>
 
-<!-- TOPBAR -->
-<div class="topbar">
-  <div class="topbar-logo">⬡ <span>AP</span>Monitor <span style="color:var(--text3);font-size:11px;font-weight:400;margin-left:4px;">Inhouse</span></div>
-  <div class="topbar-divider"></div>
-  <div class="topbar-status">
-    <div class="pulse" id="statusDot"></div>
-    <span id="statusText">Connecting...</span>
+<!-- TOP NAV -->
+<nav class="topnav">
+  <div class="nav-logo">
+    <div class="nav-logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+    </div>
+    <span class="nav-logo-text">APMonitor</span>
   </div>
-  <div class="topbar-right">
-    <span class="last-refresh" id="lastRefresh"></span>
-    <button class="btn-refresh" onclick="loadSessions()">↺ Refresh</button>
+  <div class="nav-search">
+    <span class="nav-search-icon">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    </span>
+    <input type="text" placeholder="Search serial, device, session... (Ctrl+K)" id="globalSearch" oninput="filterTable()">
   </div>
+  <div class="nav-right">
+    <div class="nav-status"><div class="status-dot" id="statusDot"></div><span id="statusText" style="font-size:12px">Connecting...</span></div>
+    <button class="nav-btn" title="Refresh" onclick="loadSessions()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3"/></svg>
+    </button>
+    <div class="nav-avatar">MS</div>
+  </div>
+</nav>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div style="padding:8px 0">
+    <a class="nav-item active" onclick="showPage('dashboard')" id="nav-dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+      Dashboard
+    </a>
+    <div class="nav-section">Monitoring</div>
+    <a class="nav-item" onclick="showPage('fleet')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Fleet Health
+    </a>
+    <a class="nav-item" onclick="showPage('apps')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+      App Health
+    </a>
+    <a class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Usage Metrics
+    </a>
+    <a class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10z"/></svg>
+      Geographic Perf.
+    </a>
+    <a class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      SLA Compliance
+    </a>
+    <a class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      Progress Portal
+    </a>
+    <div class="nav-section">Rules</div>
+    <a class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+      Gather Rules
+    </a>
+    <a class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      Analyze Rules
+    </a>
+    <a class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      IME Log Patterns
+    </a>
+    <div class="nav-section">Operations</div>
+    <a class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Audit Log
+    </a>
+    <a class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+      System Health
+    </a>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- DASHBOARD PAGE -->
+  <div class="page active" id="page-dashboard">
+    <div class="tip-bar">
+      ℹ️ <strong>Inhouse Build.</strong> This is your private APMonitor instance. Data is read from Azure Blob Storage and updated every 30 seconds.
+    </div>
+
+    <div class="stats-row" id="statsRow">
+      <div class="stat-card"><div class="stat-icon blue"><svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg></div><div class="stat-info"><div class="stat-label">Active Sessions</div><div class="stat-value" id="stat-active">—</div><div class="stat-sub">Currently enrolling</div></div></div>
+      <div class="stat-card"><div class="stat-icon green"><svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg></div><div class="stat-info"><div class="stat-label">Success Rate</div><div class="stat-value" id="stat-success">—</div><div class="stat-sub">All sessions</div></div></div>
+      <div class="stat-card"><div class="stat-icon purple"><svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg></div><div class="stat-info"><div class="stat-label">Avg. Duration</div><div class="stat-value" id="stat-avg">—</div><div class="stat-sub">All sessions</div></div></div>
+      <div class="stat-card"><div class="stat-icon indigo"><svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg></div><div class="stat-info"><div class="stat-label">Total Sessions</div><div class="stat-value" id="stat-total">—</div><div class="stat-sub">All time</div></div></div>
+      <div class="stat-card"><div class="stat-icon red"><svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg></div><div class="stat-info"><div class="stat-label">Failed</div><div class="stat-value" id="stat-failed">—</div><div class="stat-sub">Needs attention</div></div></div>
+    </div>
+
+    <div class="section-header">
+      <div class="section-title" id="sessionsTitle">Sessions</div>
+    </div>
+    <input class="table-search" placeholder="Search by device, serial, model, status, session ID..." oninput="filterTable()">
+    <div class="status-filters">
+      <button class="sf-btn green" onclick="filterByStatus('Succeeded')">Succeeded <span id="cnt-succeeded">0</span></button>
+      <button class="sf-btn blue" onclick="filterByStatus('Active')">In Progress <span id="cnt-active">0</span></button>
+      <button class="sf-btn yellow" onclick="filterByStatus('Pending')">Pending <span id="cnt-pending">0</span></button>
+      <button class="sf-btn orange" onclick="filterByStatus('Stalled')">Stalled <span id="cnt-stalled">0</span></button>
+      <button class="sf-btn red" onclick="filterByStatus('Failed')">Failed <span id="cnt-failed">0</span></button>
+    </div>
+    <div id="sessionsTableWrap">
+      <div class="loading-wrap"><div class="spinner"></div><span>Loading sessions...</span></div>
+    </div>
+  </div>
+
+  <!-- SESSION DETAIL PAGE -->
+  <div class="page" id="page-detail">
+    <button class="back-btn" onclick="showPage('dashboard')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      Back to Sessions
+    </button>
+    <div id="detailContent"></div>
+  </div>
+
+  <!-- PLACEHOLDER PAGES -->
+  <div class="page" id="page-fleet"><div class="no-data">Fleet Health — coming soon in this inhouse build.</div></div>
+  <div class="page" id="page-apps"><div class="no-data">App Health — coming soon in this inhouse build.</div></div>
+
 </div>
 
-<!-- LAYOUT -->
-<div class="layout">
-
-  <!-- SIDEBAR -->
-  <div class="sidebar">
-    <div class="sidebar-header">
-      <span class="sidebar-title">Sessions</span>
-      <span class="session-count" id="sessionCount">0</span>
+<!-- EVENT DETAIL MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="modalTitle">Event Details</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
     </div>
-    <div class="sidebar-search">
-      <input type="text" id="searchInput" placeholder="Search device / serial..." oninput="filterSessions()">
-    </div>
-    <div class="session-list" id="sessionList">
-      <div class="loading"><div class="spinner"></div><span>Loading sessions...</span></div>
+    <div class="modal-body">
+      <pre class="modal-json" id="modalJson"></pre>
     </div>
   </div>
-
-  <!-- MAIN -->
-  <div class="main" id="mainArea">
-    <div class="empty-state">
-      <div class="empty-icon">📡</div>
-      <h3>No session selected</h3>
-      <p>Select a session from the sidebar to view details</p>
-    </div>
-  </div>
-
 </div>
 
 <script>
-// ============================================================
-// CONFIGURATION
-// ============================================================
+// ──────────────────────────────────────────────────────────
+// CONFIG
+// ──────────────────────────────────────────────────────────
 const SAS_URL = "https://intuneautomation1.blob.core.windows.net/autopilot-sessions?sp=rcwl&st=2026-04-24T14:54:25Z&se=2027-04-23T23:09:25Z&spr=https&sv=2025-11-05&sr=c&sig=1IULqUuMZAYxzDK7Js3%2F2UKdRk%2B0%2FQIdPVS4kzq8D34%3D";
-const CONTAINER_BASE = "https://intuneautomation1.blob.core.windows.net/autopilot-sessions";
-const AUTO_REFRESH_MS = 30000;
+const CONTAINER = "https://intuneautomation1.blob.core.windows.net/autopilot-sessions";
+const REFRESH_MS = 30000;
 
-// ============================================================
-// STATE
-// ============================================================
-let allSessions   = [];
-let currentData   = null;
-let activeBlob    = null;
-let refreshTimer  = null;
-let activeTab     = 'overview';
-let eventFilter   = 'all';
-let policyFilter  = '';
+let allSessions=[], filteredSessions=[], currentData=null;
+let statusFilter='', evtSevFilter='all', refreshTimer=null;
 
-// ============================================================
-// BLOB LISTING
-// ============================================================
-function getSasQuery() {
-  return SAS_URL.split('?')[1];
+const sasQ=()=>SAS_URL.split('?')[1];
+
+// ──────────────────────────────────────────────────────────
+// NAVIGATION
+// ──────────────────────────────────────────────────────────
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+id)?.classList.add('active');
+  document.getElementById('nav-'+id)?.classList.add('active');
 }
 
-async function loadSessions() {
-  try {
-    const listUrl = `${CONTAINER_BASE}?restype=container&comp=list&${getSasQuery()}`;
-    const res = await fetch(listUrl);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const xml  = await res.text();
-    const parser = new DOMParser();
-    const doc  = parser.parseFromString(xml, 'text/xml');
-    const blobs = Array.from(doc.querySelectorAll('Blob'));
+// ──────────────────────────────────────────────────────────
+// LOAD SESSIONS
+// ──────────────────────────────────────────────────────────
+async function loadSessions(){
+  try{
+    const res=await fetch(`${CONTAINER}?restype=container&comp=list&${sasQ()}`);
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    const xml=new DOMParser().parseFromString(await res.text(),'text/xml');
+    const blobs=Array.from(xml.querySelectorAll('Blob')).map(b=>({
+      name:b.querySelector('Name')?.textContent||'',
+      size:parseInt(b.querySelector('Content-Length')?.textContent||'0'),
+      lastModified:b.querySelector('Last-Modified')?.textContent||'',
+      data:null
+    })).sort((a,b)=>new Date(b.lastModified)-new Date(a.lastModified));
 
-    allSessions = blobs.map(b => ({
-      name:         b.querySelector('Name')?.textContent || '',
-      size:         parseInt(b.querySelector('Content-Length')?.textContent || '0'),
-      lastModified: b.querySelector('Last-Modified')?.textContent || '',
-      data:         null
-    })).sort((a,b) => new Date(b.lastModified) - new Date(a.lastModified));
-
-    document.getElementById('sessionCount').textContent = allSessions.length;
-    updateStatus(true, `${allSessions.length} sessions`);
-    renderSessionList();
-    updateLastRefresh();
-
-    // Reload active session data if one is selected
-    if (activeBlob) {
-      const session = allSessions.find(s => s.name === activeBlob);
-      if (session) loadSessionData(session);
+    // Load data for each session
+    allSessions=[];
+    for(const blob of blobs){
+      try{
+        const r=await fetch(`${CONTAINER}/${blob.name}?${sasQ()}`);
+        if(r.ok){ blob.data=await r.json(); }
+      }catch(e){}
+      allSessions.push(blob);
     }
 
-    // Schedule next refresh
-    clearTimeout(refreshTimer);
-    refreshTimer = setTimeout(loadSessions, AUTO_REFRESH_MS);
-
-  } catch (err) {
-    updateStatus(false, `Error: ${err.message}`);
-    document.getElementById('sessionList').innerHTML = `<div class="no-data">Failed to load sessions<br><small>${err.message}</small></div>`;
+    setStatus(true,`${allSessions.length} session${allSessions.length!==1?'s':''}`);
+    updateStats();
+    renderTable();
+    clearTimeout(refreshTimer); refreshTimer=setTimeout(loadSessions,REFRESH_MS);
+  }catch(err){
+    setStatus(false,'Error: '+err.message);
+    document.getElementById('sessionsTableWrap').innerHTML=`<div class="no-data">Failed to load sessions: ${err.message}</div>`;
   }
 }
 
-async function loadSessionData(session) {
-  activeBlob = session.name;
-  renderSessionList(); // re-render to highlight active
+function updateStats(){
+  const withData=allSessions.filter(s=>s.data);
+  const completed=withData.filter(s=>s.data.EnrollmentComplete);
+  const failed=withData.filter(s=>getStatus(s.data)==='failed');
+  const active=withData.filter(s=>getStatus(s.data)==='active');
+  const durations=completed.map(s=>s.data.DurationSeconds||0).filter(d=>d>0);
+  const avgDur=durations.length?Math.round(durations.reduce((a,b)=>a+b,0)/durations.length):0;
+  const successRate=withData.length>0?Math.round((completed.length/withData.length)*100):0;
 
-  const main = document.getElementById('mainArea');
-  main.innerHTML = `<div class="loading"><div class="spinner"></div><span>Loading session data...</span></div>`;
+  document.getElementById('stat-active').textContent=active.length;
+  document.getElementById('stat-success').textContent=withData.length?successRate+'%':'—';
+  document.getElementById('stat-avg').textContent=avgDur?fmtDur(avgDur):'—';
+  document.getElementById('stat-total').textContent=allSessions.length;
+  document.getElementById('stat-failed').textContent=failed.length;
+  document.getElementById('sessionsTitle').textContent=`Sessions (${allSessions.length})`;
 
-  try {
-    const blobUrl = `${CONTAINER_BASE}/${session.name}?${getSasQuery()}`;
-    const res = await fetch(blobUrl);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    currentData = await res.json();
-    renderSessionDetail(currentData);
-  } catch (err) {
-    main.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠</div><h3>Failed to load session</h3><p>${err.message}</p></div>`;
-  }
+  document.getElementById('cnt-succeeded').textContent=completed.length;
+  document.getElementById('cnt-active').textContent=active.length;
+  document.getElementById('cnt-pending').textContent=0;
+  document.getElementById('cnt-stalled').textContent=0;
+  document.getElementById('cnt-failed').textContent=failed.length;
 }
 
-// ============================================================
-// SESSION LIST RENDER
-// ============================================================
-function filterSessions() {
-  renderSessionList();
+// ──────────────────────────────────────────────────────────
+// TABLE
+// ──────────────────────────────────────────────────────────
+function filterByStatus(s){ statusFilter=statusFilter===s?'':s; renderTable(); }
+
+function filterTable(){
+  renderTable();
 }
 
-function renderSessionList() {
-  const query   = document.getElementById('searchInput').value.toLowerCase();
-  const filtered = allSessions.filter(s =>
-    !query || s.name.toLowerCase().includes(query)
-  );
+function renderTable(){
+  const q=(document.getElementById('globalSearch')?.value||'').toLowerCase();
+  filteredSessions=allSessions.filter(s=>{
+    const d=s.data||{};
+    const dev=d.Device||{};
+    const st=getStatus(d);
+    const text=`${dev.DeviceName||''} ${dev.SerialNumber||''} ${dev.Model||''} ${dev.Manufacturer||''} ${s.name}`.toLowerCase();
+    const matchQ=!q||text.includes(q);
+    const matchSt=!statusFilter||(statusFilter==='Succeeded'&&d.EnrollmentComplete)||(statusFilter==='Active'&&st==='active')||(statusFilter==='Failed'&&st==='failed');
+    return matchQ&&matchSt;
+  });
 
-  if (!filtered.length) {
-    document.getElementById('sessionList').innerHTML = '<div class="no-data">No sessions found</div>';
+  if(!filteredSessions.length){
+    document.getElementById('sessionsTableWrap').innerHTML='<div class="no-data">No sessions found.</div>';
     return;
   }
 
-  document.getElementById('sessionList').innerHTML = filtered.map(session => {
-    const isTest   = session.name.startsWith('TEST-');
-    const isActive = session.name === activeBlob;
-    const d        = session.data;
-    const device   = d?.Device?.DeviceName || session.name.replace('.json','').substring(0,20);
-    const serial   = d?.Device?.SerialNumber || '—';
-    const status   = getOverallStatus(d);
-    const ts       = formatTime(session.lastModified);
-    const size     = `${(session.size/1024).toFixed(0)} KB`;
-
-    let badgeClass = 'badge-unknown';
-    let badgeText  = 'Unknown';
-    if (isTest)                { badgeClass = 'badge-test';     badgeText = 'Test'; }
-    else if (status === 'complete') { badgeClass = 'badge-success';  badgeText = 'Done'; }
-    else if (status === 'active')   { badgeClass = 'badge-progress'; badgeText = 'Live'; }
-    else if (status === 'failed')   { badgeClass = 'badge-error';    badgeText = 'Failed'; }
-
-    return `
-      <div class="session-item ${isActive?'active':''}" onclick="loadSessionData(${JSON.stringify({name:session.name,size:session.size,lastModified:session.lastModified,data:null}).replace(/"/g,'&quot;')})">
-        <div class="session-item-header">
-          <div class="session-device">${device}</div>
-          <span class="badge ${badgeClass}">${badgeText}</span>
-        </div>
-        <div class="session-serial">${serial}</div>
-        <div class="session-meta">
-          <span class="session-time">${ts}</span>
-          <span>${size}</span>
-        </div>
-      </div>`;
+  const rows=filteredSessions.map((s,i)=>{
+    const d=s.data||{};
+    const dev=d.Device||{};
+    const st=getStatus(d);
+    const isTest=s.name.startsWith('TEST-');
+    const {badgeCls,badgeText}=statusInfo(st,isTest);
+    return `<tr onclick="openSession(${i})" style="cursor:pointer">
+      <td><div class="td-device">${esc(dev.DeviceName||s.name)}</div><div class="td-serial">${esc(dev.SerialNumber||'—')}</div></td>
+      <td class="td-model">${esc((dev.Manufacturer||'')+' '+(dev.Model||'')).trim()||'—'}</td>
+      <td><span class="badge ${badgeCls}">${badgeText}</span></td>
+      <td>${toArr(d.Events).length||'—'}</td>
+      <td>${d.DurationSeconds?fmtDur(d.DurationSeconds):'—'}</td>
+      <td style="font-size:12px;color:var(--text2)">${d.StartTime?fmtTime(d.StartTime):'—'}</td>
+    </tr>`;
   }).join('');
 
-  // Re-attach click handlers properly
-  document.querySelectorAll('.session-item').forEach((el, i) => {
-    el.addEventListener('click', () => loadSessionData(filtered[i]));
-  });
+  document.getElementById('sessionsTableWrap').innerHTML=`
+    <table class="sessions-table">
+      <thead><tr>
+        <th>Device ↑</th><th>Model</th><th>Status</th><th>Events</th><th>Duration</th><th>Started</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
 }
 
-// ============================================================
-// SESSION DETAIL RENDER
-// ============================================================
-function renderSessionDetail(d) {
-  const main = document.getElementById('mainArea');
-  const device = d.Device || {};
-  const status = getOverallStatus(d);
+// ──────────────────────────────────────────────────────────
+// SESSION DETAIL
+// ──────────────────────────────────────────────────────────
+function openSession(idx){
+  currentData=filteredSessions[idx].data;
+  if(!currentData) return;
+  showPage('detail');
+  renderDetail(currentData);
+}
 
-  main.innerHTML = `
-    <div class="session-detail">
-      <div class="detail-header">
-        <div>
-          <div class="detail-device-name">${device.DeviceName || 'Unknown Device'}</div>
-          <div class="detail-meta">
-            <span>📋 ${device.SerialNumber || '—'}</span>
-            <span>🏢 ${device.TenantDomain || '—'}</span>
-            <span>💻 ${device.Model || '—'}</span>
-            <span>⏱ ${d.DurationSeconds ? formatDuration(d.DurationSeconds) : '—'}</span>
-            ${d.IsTestRun ? '<span style="color:var(--purple)">🧪 Test Run</span>' : ''}
+function renderDetail(d){
+  const dev=d.Device||{};
+  const st=getStatus(d);
+  const isTest=d.IsTestRun;
+  const {badgeCls,badgeText}=statusInfo(st,isTest);
+  const events=toArr(d.Events);
+  const sidecarApps=toArr(d.SidecarWin32Apps);
+  const msiApps=toArr(d.MSIApps);
+  const perfNow=d.PerformanceNow||d.Performance||{};
+  const perfHistory=toArr(d.PerformanceHistory);
+
+  document.getElementById('detailContent').innerHTML=`
+
+    <!-- SESSION INFO CARD -->
+    <div class="coll-section" style="margin-bottom:16px">
+      <div style="padding:0">
+        <div class="sess-info-grid">
+          <div class="sess-info-cell"><div class="sic-label">Device</div><div class="sic-value">${esc(dev.DeviceName||'—')}</div></div>
+          <div class="sess-info-cell"><div class="sic-label">Model</div><div class="sic-value">${esc((dev.Manufacturer||'')+' '+(dev.Model||'')||'—')}</div></div>
+          <div class="sess-info-cell"><div class="sic-label">Serial Number</div><div class="sic-value" style="font-family:monospace;font-size:12px">${esc(dev.SerialNumber||'—')}</div></div>
+          <div class="sess-info-cell"><div class="sic-label">Session ID</div><div class="sic-value" style="font-family:monospace;font-size:12px">${(d.SessionId||'—').substring(0,18)}...</div></div>
+          <div class="sess-info-cell"><div class="sic-label">Status</div><div class="sic-value"><span class="badge ${badgeCls}">${badgeText}</span></div></div>
+          <div class="sess-info-cell"><div class="sic-label">Started</div><div class="sic-value">${d.StartTime?fmtTime(d.StartTime):'—'}</div></div>
+          <div class="sess-info-cell"><div class="sic-label">Duration</div><div class="sic-value">${fmtDur(d.DurationSeconds)}</div></div>
+          <div class="sess-info-cell"><div class="sic-label">Events</div><div class="sic-value">${events.length}</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DEVICE DETAILS -->
+    <div class="coll-section">
+      <div class="coll-header" onclick="toggleColl(this)">
+        <span class="coll-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          Device Details
+        </span>
+        <span class="coll-chevron">▾</span>
+      </div>
+      <div class="coll-body">
+        <div class="dd-grid">
+          <div>
+            ${ddRow('Device Name',dev.DeviceName)}
+            ${ddRow('Serial Number',dev.SerialNumber)}
+            ${ddRow('Manufacturer',dev.Manufacturer)}
+            ${ddRow('Model',dev.Model)}
+            ${ddRow('OS',dev.OSCaption)}
+            ${ddRow('OS Build',dev.OSBuild)}
+          </div>
+          <div>
+            ${ddRow('CPU',dev.CPUName)}
+            ${ddRow('RAM',dev.TotalRAMGB?dev.TotalRAMGB+' GB':'—')}
+            ${ddRow('Disk',dev.DiskTotalGB?`${dev.DiskTotalGB} GB total, ${dev.DiskFreeGB} GB free`:'—')}
+            ${ddRow('Entra Device ID',dev.EntraDeviceId||'—')}
+            ${ddRow('Tenant Domain',dev.TenantDomain||'—')}
+            ${ddRow('Enrollment GUID',dev.EnrollmentGuid||'—')}
           </div>
         </div>
-        <div style="margin-left:auto;">
-          ${renderBadgeLarge(status)}
-        </div>
-      </div>
-
-      <div class="tabs">
-        <div class="tab ${activeTab==='overview'?'active':''}" onclick="switchTab('overview')">Overview</div>
-        <div class="tab ${activeTab==='apps'?'active':''}" onclick="switchTab('apps')">
-          Apps <span class="tab-badge">${countApps(d)}</span>
-        </div>
-        <div class="tab ${activeTab==='policies'?'active':''}" onclick="switchTab('policies')">
-          Policies <span class="tab-badge">${toArr(d.NodeCachePolicies).length}</span>
-        </div>
-        <div class="tab ${activeTab==='events'?'active':''}" onclick="switchTab('events')">
-          Events <span class="tab-badge">${toArr(d.Events).length}</span>
-        </div>
-        <div class="tab ${activeTab==='perf'?'active':''}" onclick="switchTab('perf')">Performance</div>
-      </div>
-
-      <div class="tab-content">
-        <div class="tab-panel ${activeTab==='overview'?'active':''}" id="tab-overview">${renderOverview(d)}</div>
-        <div class="tab-panel ${activeTab==='apps'?'active':''}" id="tab-apps">${renderApps(d)}</div>
-        <div class="tab-panel ${activeTab==='policies'?'active':''}" id="tab-policies">${renderPolicies(d)}</div>
-        <div class="tab-panel ${activeTab==='events'?'active':''}" id="tab-events">${renderEvents(d)}</div>
-        <div class="tab-panel ${activeTab==='perf'?'active':''}" id="tab-perf">${renderPerf(d)}</div>
-      </div>
-    </div>`;
-
-  if (activeTab === 'perf') renderPerfChart(d);
-}
-
-// ============================================================
-// OVERVIEW TAB
-// ============================================================
-function renderOverview(d) {
-  const dev = d.Device || {};
-  const phases = d.ESPPhases || {};
-  const firstSync = d.EnrollmentFirstSync || {};
-  const sidecar = d.SidecarInstallState || {};
-
-  return `
-    <!-- STAT ROW -->
-    <div class="stat-row">
-      <div class="stat-card">
-        <div class="stat-card-label">Win32 Apps</div>
-        <div class="stat-card-value">${toArr(d.SidecarWin32Apps).length}</div>
-        <div class="stat-card-sub">ESP tracked</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-card-label">Policies</div>
-        <div class="stat-card-value">${toArr(d.NodeCachePolicies).length}</div>
-        <div class="stat-card-sub">NodeCache</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-card-label">Events</div>
-        <div class="stat-card-value">${toArr(d.Events).length}</div>
-        <div class="stat-card-sub">All sources</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-card-label">Sidecar</div>
-        <div class="stat-card-value" style="font-size:14px;padding-top:4px;">${sidecar.InstallationState||'—'}</div>
-        <div class="stat-card-sub">IME state</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-card-label">Provisioning</div>
-        <div class="stat-card-value" style="font-size:14px;padding-top:4px;">${firstSync.IsServerProvisioningDone===1?'Done':'Pending'}</div>
-        <div class="stat-card-sub">FirstSync</div>
       </div>
     </div>
 
-    <!-- ESP PHASES -->
-    <div class="card">
-      <div class="card-header"><span class="card-title">ESP Phases</span></div>
-      <div class="card-body">
-        <div class="phase-grid">
-          ${renderPhaseCard('Device Preparation', phases.DevicePreparation)}
-          ${renderPhaseCard('Device Setup', phases.DeviceSetup)}
-          ${renderPhaseCard('Account Setup', phases.AccountSetup)}
-        </div>
+    <!-- ENROLLMENT PROGRESS -->
+    <div class="coll-section">
+      <div class="coll-header" onclick="toggleColl(this)">
+        <span class="coll-title">Enrollment Progress</span>
+        <span class="coll-chevron open">▾</span>
+      </div>
+      <div class="coll-body open">
+        ${renderStepper(d)}
       </div>
     </div>
 
-    <!-- DEVICE INFO -->
-    <div class="grid-2">
-      <div class="card">
-        <div class="card-header"><span class="card-title">Device</span></div>
-        <div class="card-body">
-          ${kv('Name',        dev.DeviceName)}
-          ${kv('Serial',      dev.SerialNumber)}
-          ${kv('Manufacturer',dev.Manufacturer)}
-          ${kv('Model',       dev.Model)}
-          ${kv('OS',          dev.OSCaption)}
-          ${kv('Build',       dev.OSBuild)}
-          ${kv('CPU',         dev.CPUName)}
-          ${kv('RAM',         dev.TotalRAMGB ? dev.TotalRAMGB + ' GB' : '—')}
-          ${kv('Disk (C:)',   dev.DiskTotalGB ? dev.DiskTotalGB + ' GB total / ' + dev.DiskFreeGB + ' GB free' : '—')}
-          ${kv('Uptime',      dev.UptimeHours ? dev.UptimeHours + ' hrs' : '—')}
-        </div>
+    <!-- ANALYSIS -->
+    <div class="coll-section">
+      <div class="coll-header" onclick="toggleColl(this)">
+        <span class="coll-title">✨ Analysis Results</span>
+        <span class="coll-chevron">▾</span>
       </div>
-      <div class="card">
-        <div class="card-header"><span class="card-title">Enrollment</span></div>
-        <div class="card-body">
-          ${kv('Entra Device ID',  dev.EntraDeviceId || '—')}
-          ${kv('Tenant ID',        dev.TenantId || '—')}
-          ${kv('Tenant Domain',    dev.TenantDomain || '—')}
-          ${kv('Enrollment GUID',  dev.EnrollmentGuid || '—')}
-          ${kv('Tenant Matched',   dev.TenantMatched !== undefined ? String(dev.TenantMatched) : '—')}
-          ${kv('Provisioning Done',firstSync.IsServerProvisioningDone===1?'Yes':'No')}
-          ${kv('Skip Device Page', firstSync.SkipDeviceStatusPage!==undefined?String(firstSync.SkipDeviceStatusPage):'—')}
-          ${kv('Skip User Page',   firstSync.SkipUserStatusPage!==undefined?String(firstSync.SkipUserStatusPage):'—')}
-          ${kv('Session ID',       d.SessionId || '—')}
-          ${kv('Schema Version',   d.SchemaVersion || '—')}
-        </div>
+      <div class="coll-body">
+        <div class="no-data">No issues detected. Analyze Rules are not configured in this inhouse build.</div>
       </div>
-    </div>`;
+    </div>
+
+    <!-- PERFORMANCE -->
+    <div class="coll-section">
+      <div class="coll-header" onclick="toggleColl(this)">
+        <span class="coll-title">📊 Performance Metrics <span style="font-size:13px;font-weight:400;color:var(--text3)">(${perfHistory.length} samples)</span></span>
+        <span class="coll-chevron open">▾</span>
+      </div>
+      <div class="coll-body open">
+        ${renderPerf(perfNow,perfHistory)}
+      </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    ${renderScripts(d)}
+
+    <!-- DOWNLOAD PROGRESS -->
+    ${renderDownload(sidecarApps,msiApps)}
+
+    <!-- INSTALL PROGRESS -->
+    ${renderInstall(sidecarApps,msiApps)}
+
+    <!-- EVENT TIMELINE -->
+    <div class="coll-section">
+      <div class="coll-header" onclick="toggleColl(this)">
+        <span class="coll-title">📋 Event Timeline <span style="font-size:13px;font-weight:400;color:var(--text3)">(${events.length} events)</span></span>
+        <span class="coll-chevron open">▾</span>
+      </div>
+      <div class="coll-body open" style="padding:16px">
+        ${renderEvtTimeline(events)}
+      </div>
+    </div>
+  `;
+
+  setTimeout(()=>drawSparklines(perfHistory),50);
 }
 
-function renderPhaseCard(name, phase) {
-  if (!phase) return `<div class="phase-card notStarted"><div class="phase-name">${name}</div><div class="phase-status notStarted">Not Started</div></div>`;
+// ──────────────────────────────────────────────────────────
+// STEPPER
+// ──────────────────────────────────────────────────────────
+function renderStepper(d){
+  const phases=parsePhases(d);
+  const dp=phases.DevicePreparation?.catState||'';
+  const ds=phases.DeviceSetup?.catState||'';
+  const as=phases.AccountSetup?.catState||'';
+  const done=d.EnrollmentComplete;
 
-  let phaseObj = phase;
-  // Parse if it's a JSON string
-  if (typeof phase.Status === 'string' && phase.Status.startsWith('{')) {
-    try { phaseObj = { ...phase, _parsed: JSON.parse(phase.Status) }; } catch(e) {}
-  }
-
-  // Also check if Status itself is parsed JSON object
-  const parsed = phaseObj._parsed || (typeof phaseObj.Status === 'object' ? phaseObj.Status : null);
-  const catState = parsed?.categoryState || phaseObj.Status || 'unknown';
-
-  let subcats = '';
-  if (parsed) {
-    Object.keys(parsed).forEach(k => {
-      if (k === 'categoryState' || k === 'categoryStatusText') return;
-      const sub = parsed[k];
-      if (typeof sub === 'object' && sub.subcategoryState) {
-        const subName = k.split('.').pop().replace('Subcategory','').replace(/([A-Z])/g,' $1').trim();
-        subcats += `
-          <div class="subcategory">
-            <div class="sub-dot ${sub.subcategoryState}"></div>
-            <div class="sub-info">
-              <div class="sub-name">${subName}</div>
-              <div class="sub-text">${sub.subcategoryStatusText||''}</div>
-            </div>
-          </div>`;
-      }
-    });
-  }
-
-  return `
-    <div class="phase-card ${catState}">
-      <div class="phase-name">${name}</div>
-      <div class="phase-status ${catState}">${catState}</div>
-      ${subcats}
-    </div>`;
-}
-
-// Normalize PowerShell JSON output - single items come as objects, not arrays
-function toArr(val) {
-  if (!val) return [];
-  if (Array.isArray(val)) return val;
-  if (typeof val === 'object') return [val];
-  return [];
-}
-
-// ============================================================
-// APPS TAB
-// ============================================================
-function renderApps(d) {
-  const sidecarApps  = toArr(d.SidecarWin32Apps);
-  const imeReporting = toArr(d.IMEReporting);
-  const msiApps      = toArr(d.MSIApps);
-  const espDiag      = d.ESPDiagnostics || {};
-
-  // Merge Sidecar + IME reporting
-  const win32 = sidecarApps.map(app => {
-    const report = imeReporting.find(r => r.AppId === app.AppGuid) || {};
-    return { ...app, ComplianceState: report.ComplianceState, EnforcementState: report.EnforcementState };
-  });
-
-  let html = '';
-
-  // Win32 Apps
-  if (win32.length) {
-    html += `
-      <div class="card">
-        <div class="card-header"><span class="card-title">Win32 Apps — ESP Tracked (${win32.length})</span></div>
-        <table class="app-table">
-          <thead><tr>
-            <th>App GUID</th>
-            <th>State</th>
-            <th>HResult</th>
-            <th>Snapshots</th>
-          </tr></thead>
-          <tbody>
-            ${win32.map(a => `
-              <tr>
-                <td>
-                  <div style="color:var(--text);font-size:11px;">Win32 App</div>
-                  <div class="app-guid">${a.AppGuid}</div>
-                  <div style="font-size:9px;color:var(--text3);margin-top:2px;">
-                    <a href="https://intune.microsoft.com/#view/Microsoft_Intune_Apps/SettingsMenu/~/0/appId/${a.AppGuid}" target="_blank" style="color:var(--accent);text-decoration:none;">Open in Intune ↗</a>
-                  </div>
-                </td>
-                <td><span class="state-pill state-${a.InstallationState||'Unknown'}">${a.InstallationState||'Unknown'}</span></td>
-                <td style="color:${a.HResult?'var(--red)':'var(--text3)'};">${a.HResult||'—'}</td>
-                <td style="color:var(--text3);">${(a.Snapshots||[]).length}</td>
-              </tr>`).join('')}
-          </tbody>
-        </table>
-      </div>`;
-  }
-
-  // MSI Apps
-  if (msiApps.length) {
-    html += `
-      <div class="card">
-        <div class="card-header"><span class="card-title">LOB / MSI Apps (${msiApps.length})</span></div>
-        <table class="app-table">
-          <thead><tr><th>Product Code</th><th>Display Name</th><th>Status</th><th>Last Error</th></tr></thead>
-          <tbody>
-            ${msiApps.map(a => `
-              <tr>
-                <td><div class="app-guid">${a.ProductCode}</div></td>
-                <td>${a.DisplayName||'—'}</td>
-                <td>${a.Status!==undefined?a.Status:'—'}</td>
-                <td style="color:${a.LastError?'var(--red)':'var(--text3)'};">${a.LastError||'—'}</td>
-              </tr>`).join('')}
-          </tbody>
-        </table>
-      </div>`;
-  }
-
-  // ESP Diagnostics
-  const diagSections = [
-    { key:'Certificates', label:'Certificates' },
-    { key:'WiFiProfiles',  label:'Wi-Fi Profiles' },
-    { key:'StoreApps',     label:'Store Apps' },
-    { key:'Policies',      label:'Tracked Policies' },
-    { key:'MSIApps',       label:'MSI (Diag)' }
+  const steps=[
+    {label:'Start',state:'done',dur:''},
+    {label:'Device\nPreparation',state:phaseState(dp),dur:''},
+    {label:'Device\nSetup',state:phaseState(ds),dur:''},
+    {label:'Apps\n(Device)',state:ds==='succeeded'?'done':'pending',dur:''},
+    {label:'Account\nSetup',state:phaseState(as),dur:''},
+    {label:'Apps\n(User)',state:as==='succeeded'?'done':'pending',dur:''},
+    {label:'Finalizing',state:done?'done':'pending',dur:''},
+    {label:'Complete',state:done?'done':'pending',dur:done&&d.DurationSeconds?fmtDur(d.DurationSeconds):''},
   ];
 
-  diagSections.forEach(sec => {
-    const items = espDiag[sec.key] || [];
-    if (!items.length) return;
-    html += `
-      <div class="card">
-        <div class="card-header"><span class="card-title">${sec.label} — ESP Diagnostics (${items.length})</span></div>
-        <table class="app-table">
-          <thead><tr><th>Item ID</th><th>Type</th><th>Status</th><th>Timestamp</th></tr></thead>
-          <tbody>
-            ${items.map(i => `
-              <tr>
-                <td><div class="app-guid">${i.ItemId}</div></td>
-                <td>${i.Type}</td>
-                <td><span class="state-pill state-${i.Installed?'Completed':'NotInstalled'}">${i.Installed?'Installed':'Not Installed'}</span></td>
-                <td style="color:var(--text3);font-size:10px;">${i.Timestamp||'—'}</td>
-              </tr>`).join('')}
-          </tbody>
-        </table>
+  return `<div class="stepper-wrap"><div class="stepper">
+    ${steps.map((s,i)=>{
+      const icon=s.state==='done'?'✓':s.state==='error'?'✕':'';
+      return `<div class="step">
+        ${i<steps.length-1?`<div class="step-line ${s.state==='done'?'done':''}"></div>`:''}
+        <div class="step-circle ${s.state}">${icon}</div>
+        <div class="step-label ${s.state}">${s.label.replace('\n','<br>')}</div>
+        ${s.dur?`<div class="step-dur">${s.dur}</div>`:''}
       </div>`;
+    }).join('')}
+  </div></div>
+  ${renderSubcats(phases)}`;
+}
+
+function phaseState(catState){
+  if(!catState||catState==='notStarted') return 'pending';
+  if(catState==='succeeded') return 'done';
+  if(catState==='failed') return 'error';
+  return 'active';
+}
+
+function parsePhases(d){
+  const raw=d.ESPPhases||{};
+  const result={};
+  ['DevicePreparation','DeviceSetup','AccountSetup'].forEach(key=>{
+    const p=raw[key];
+    if(!p){result[key]={catState:'',subcats:{}}; return;}
+    let catState=p.Status,subcats={};
+    if(typeof catState==='string'&&catState.startsWith('{')){
+      try{
+        const parsed=JSON.parse(catState);
+        catState=parsed.categoryState||'';
+        Object.entries(parsed).forEach(([k,v])=>{
+          if(k!=='categoryState'&&k!=='categoryStatusText'&&typeof v==='object'&&v.subcategoryState){
+            const name=k.split('.').pop().replace('Subcategory','').replace(/([A-Z])/g,' $1').trim();
+            subcats[name]={state:v.subcategoryState,text:v.subcategoryStatusText||''};
+          }
+        });
+      }catch(e){}
+    }
+    result[key]={catState,subcats};
   });
-
-  if (!html) html = '<div class="no-data">No app data collected. This will populate during Autopilot enrollment.</div>';
-  return html;
+  return result;
 }
 
-// ============================================================
-// POLICIES TAB
-// ============================================================
-function renderPolicies(d) {
-  const policies = toArr(d.NodeCachePolicies);
-  if (!policies.length) return '<div class="no-data">No policies in NodeCache. Will populate during enrollment.</div>';
-
-  return `
-    <div style="margin-bottom:10px;display:flex;gap:8px;align-items:center;">
-      <input type="text" placeholder="Filter by URI..." oninput="filterPolicy(this.value)"
-        style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:4px;font-family:var(--font-mono);font-size:11px;outline:none;width:300px;">
-      <span style="color:var(--text3);font-size:11px;">${policies.length} total policies</span>
-    </div>
-    <div class="card">
-      <table class="policy-table" id="policyTable">
-        <thead><tr><th>Node ID</th><th>Node URI (CSP Path)</th><th>Cached Value</th></tr></thead>
-        <tbody>
-          ${policies.map(p => `
-            <tr>
-              <td style="color:var(--text3);width:80px;">${p.NodeId}</td>
-              <td style="color:var(--cyan);">${escHtml(p.NodeUri||'—')}</td>
-              <td style="color:var(--text2);max-width:200px;overflow:hidden;text-overflow:ellipsis;">${escHtml(String(p.CachedValue||'—').substring(0,80))}</td>
-            </tr>`).join('')}
-        </tbody>
-      </table>
-    </div>`;
-}
-
-function filterPolicy(val) {
-  const rows = document.querySelectorAll('#policyTable tbody tr');
-  rows.forEach(r => {
-    r.style.display = r.textContent.toLowerCase().includes(val.toLowerCase()) ? '' : 'none';
+function renderSubcats(phases){
+  const sections=[];
+  ['DevicePreparation','DeviceSetup','AccountSetup'].forEach(key=>{
+    const p=phases[key];
+    if(!p||!Object.keys(p.subcats||{}).length) return;
+    const label=key.replace(/([A-Z])/g,' $1').trim();
+    sections.push(`<div style="margin-top:14px">
+      <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px">${label} Subcategories</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        ${Object.entries(p.subcats).map(([name,sub])=>{
+          const cls=sub.state==='succeeded'?'badge-green':sub.state==='failed'?'badge-red':sub.state==='inProgress'?'badge-blue':'badge-gray';
+          return `<span class="badge ${cls}" title="${esc(sub.text)}">${esc(name)}</span>`;
+        }).join('')}
+      </div>
+    </div>`);
   });
+  return sections.join('');
 }
 
-// ============================================================
-// EVENTS TAB
-// ============================================================
-function renderEvents(d) {
-  const events = toArr(d.Events);
-  if (!events.length) return '<div class="no-data">No events collected.</div>';
+// ──────────────────────────────────────────────────────────
+// PERFORMANCE
+// ──────────────────────────────────────────────────────────
+function renderPerf(now,history){
+  if(!now||!Object.keys(now).length) return '<div class="no-data">Performance data available during live enrollment.</div>';
+  const cpu=now.CPUPercent??'—';
+  const ram=now.RAMPercent??'—';
+  const ramU=now.RAMUsedGB??'—';
+  const ramT=now.RAMTotalGB??'—';
+  const free=typeof ramU==='number'&&typeof ramT==='number'?(ramT-ramU).toFixed(1)+' GB':'—';
 
-  const sources = [...new Set(events.map(e => e.Source))];
-
-  return `
-    <div class="filter-row">
-      <button class="filter-btn ${eventFilter==='all'?'active':''}" onclick="setEventFilter('all')">All (${events.length})</button>
-      ${sources.map(s => `<button class="filter-btn ${eventFilter===s?'active':''}" onclick="setEventFilter('${s}')">${s} (${events.filter(e=>e.Source===s).length})</button>`).join('')}
-      <button class="filter-btn ${eventFilter==='errors'?'active':''}" onclick="setEventFilter('errors')">Errors Only</button>
-    </div>
-    <div class="event-list" id="eventList">
-      ${renderEventItems(events)}
-    </div>`;
+  return `<div class="perf-grid">
+    <div class="perf-card"><div class="perf-label">CPU</div><div class="perf-value ${cpu>80?'bad':cpu>60?'warn':''}">${typeof cpu==='number'?cpu.toFixed(1)+'%':cpu}</div><canvas class="perf-sparkline" id="sp0" width="200" height="36"></canvas></div>
+    <div class="perf-card"><div class="perf-label">Memory</div><div class="perf-value ${ram>85?'bad':ram>70?'warn':''}">${typeof ram==='number'?ram.toFixed(1)+'%':ram}</div><canvas class="perf-sparkline" id="sp1" width="200" height="36"></canvas></div>
+    <div class="perf-card"><div class="perf-label">Disk Free</div><div class="perf-value">${free}</div><canvas class="perf-sparkline" id="sp2" width="200" height="36"></canvas></div>
+    <div class="perf-card"><div class="perf-label">RAM Used</div><div class="perf-value">${typeof ramU==='number'?ramU+' GB':ramU}</div><canvas class="perf-sparkline" id="sp3" width="200" height="36"></canvas></div>
+    <div class="perf-card"><div class="perf-label">Samples</div><div class="perf-value">${history.length}</div><canvas class="perf-sparkline" id="sp4" width="200" height="36"></canvas></div>
+  </div>`;
 }
 
-function renderEventItems(events) {
-  let filtered = events;
-  if (eventFilter !== 'all' && eventFilter !== 'errors') {
-    filtered = events.filter(e => e.Source === eventFilter);
-  } else if (eventFilter === 'errors') {
-    filtered = events.filter(e => e.Level === 'Error' || e.Level === 'Critical');
-  }
-
-  if (!filtered.length) return '<div class="no-data">No events match this filter.</div>';
-
-  return filtered.map(e => {
-    const level = e.Level || '';
-    const cls = level==='Error'||level==='Critical' ? 'error' : level==='Warning' ? 'warning' : 'info';
-    const lvlCls = level==='Error'||level==='Critical' ? 'level-error' : level==='Warning' ? 'level-warning' : 'level-info';
-    return `
-      <div class="event-item ${cls}">
-        <span class="event-time">${formatDateTime(e.TimeCreated)}</span>
-        <span class="event-source">${e.Source||'—'}</span>
-        <span class="event-level ${lvlCls}">${level||'Info'}</span>
-        <span class="event-id">${e.EventId||''}</span>
-        <span class="event-msg">${escHtml(e.Message||'')}</span>
-      </div>`;
-  }).join('');
-}
-
-function setEventFilter(f) {
-  eventFilter = f;
-  if (currentData) {
-    document.getElementById('eventList').innerHTML = renderEventItems(currentData.Events||[]);
-    document.querySelectorAll('.filter-btn').forEach(b => {
-      b.classList.toggle('active', b.textContent.startsWith(f==='all'?'All':f==='errors'?'Error':f));
-    });
-  }
-}
-
-// ============================================================
-// PERFORMANCE TAB
-// ============================================================
-function renderPerf(d) {
-  const perf = d.PerformanceNow || d.Performance || {};
-  const history = d.PerformanceHistory || [];
-
-  return `
-    <div class="perf-grid">
-      <div class="perf-stat">
-        <div class="perf-stat-label">CPU Usage</div>
-        <div class="perf-stat-value">${perf.CPUPercent !== null && perf.CPUPercent !== undefined ? perf.CPUPercent : '—'}<span class="perf-stat-unit"> %</span></div>
-      </div>
-      <div class="perf-stat">
-        <div class="perf-stat-label">RAM Usage</div>
-        <div class="perf-stat-value">${perf.RAMPercent !== null && perf.RAMPercent !== undefined ? perf.RAMPercent : '—'}<span class="perf-stat-unit"> %</span></div>
-      </div>
-    </div>
-    <div class="perf-grid">
-      <div class="perf-stat">
-        <div class="perf-stat-label">RAM Used</div>
-        <div class="perf-stat-value">${perf.RAMUsedGB||'—'}<span class="perf-stat-unit"> GB</span></div>
-      </div>
-      <div class="perf-stat">
-        <div class="perf-stat-label">RAM Total</div>
-        <div class="perf-stat-value">${perf.RAMTotalGB||'—'}<span class="perf-stat-unit"> GB</span></div>
-      </div>
-    </div>
-    ${history.length > 1 ? `
-    <div class="card">
-      <div class="card-header"><span class="card-title">Performance History (${history.length} snapshots)</span></div>
-      <div class="card-body">
-        <canvas id="perfChart" height="120"></canvas>
-      </div>
-    </div>` : '<div class="no-data">Performance history available only during live enrollment (30s intervals).</div>'}`;
-}
-
-function renderPerfChart(d) {
-  const history = d.PerformanceHistory || [];
-  if (history.length < 2) return;
-  const canvas = document.getElementById('perfChart');
-  if (!canvas) return;
-
-  const W = canvas.offsetWidth || 600;
-  const H = 120;
-  canvas.width = W; canvas.height = H;
-  const ctx = canvas.getContext('2d');
-
-  const labels = history.map((h,i) => i);
-  const cpuData = history.map(h => h.CPUPercent || 0);
-  const ramData = history.map(h => h.RAMPercent || 0);
-
-  const drawLine = (data, color) => {
-    ctx.beginPath();
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 1.5;
-    data.forEach((v, i) => {
-      const x = (i / (data.length-1)) * W;
-      const y = H - (v / 100) * H;
-      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+function drawSparklines(h){
+  if(!h||h.length<2) return;
+  const sets=[
+    {id:'sp0',key:'CPUPercent',color:'#2563eb',max:100},
+    {id:'sp1',key:'RAMPercent',color:'#7c3aed',max:100},
+    {id:'sp2',key:'RAMUsedGB',color:'#16a34a',max:null,inv:true},
+    {id:'sp3',key:'RAMUsedGB',color:'#d97706',max:null},
+    {id:'sp4',key:'CPUPercent',color:'#6b7280',max:100},
+  ];
+  sets.forEach(({id,key,color,max})=>{
+    const el=document.getElementById(id); if(!el) return;
+    const W=el.parentElement.offsetWidth-28||150; el.width=W; el.height=36;
+    const ctx=el.getContext('2d');
+    const vals=h.map(x=>x[key]||0);
+    const mx=max||Math.max(...vals,1);
+    ctx.beginPath(); ctx.strokeStyle=color; ctx.lineWidth=1.5; ctx.lineJoin='round';
+    vals.forEach((v,i)=>{
+      const x=(i/(vals.length-1))*(W-2)+1;
+      const y=34-(v/mx)*30;
+      i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
     });
     ctx.stroke();
+    ctx.lineTo((W-2)+1,36); ctx.lineTo(1,36); ctx.closePath();
+    ctx.globalAlpha=0.12; ctx.fillStyle=color; ctx.fill(); ctx.globalAlpha=1;
+  });
+}
 
-    // Fill
-    ctx.beginPath();
-    data.forEach((v, i) => {
-      const x = (i / (data.length-1)) * W;
-      const y = H - (v / 100) * H;
-      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-    });
-    ctx.lineTo(W, H); ctx.lineTo(0, H);
-    ctx.fillStyle = color.replace(')', ',0.08)').replace('rgb','rgba');
-    ctx.fill();
-  };
+// ──────────────────────────────────────────────────────────
+// SCRIPTS
+// ──────────────────────────────────────────────────────────
+function renderScripts(d){
+  const events=toArr(d.Events);
+  const scriptEvts=events.filter(e=>{
+    const msg=e.Message||'';
+    return msg.toLowerCase().includes('script')||msg.toLowerCase().includes('platform script');
+  }).slice(0,5);
+  if(!scriptEvts.length) return '';
+  return `<div class="coll-section">
+    <div class="coll-header" onclick="toggleColl(this)">
+      <span class="coll-title">📜 Script Executions <span style="font-size:13px;font-weight:400;color:var(--text3)">(${scriptEvts.length} succeeded)</span></span>
+      <span class="coll-chevron open">▾</span>
+    </div>
+    <div class="coll-body open">
+      ${scriptEvts.map(e=>{
+        const err=e.Level==='Error';
+        return `<div class="script-row">
+          <div class="script-badges">
+            <span class="badge ${err?'badge-red':'badge-green'}">${err?'Failed':'Success'}</span>
+            <span class="badge badge-gray">${e.Source||'IME'}</span>
+          </div>
+          <div class="script-name">${esc(e.Message||'').substring(0,100)}</div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
 
-  // Grid lines
-  ctx.strokeStyle = '#1f2d3d';
-  ctx.lineWidth = 1;
-  [25,50,75].forEach(v => {
-    const y = H - (v/100)*H;
-    ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke();
-    ctx.fillStyle = '#4a5f74';
-    ctx.font = '9px JetBrains Mono';
-    ctx.fillText(v+'%', 4, y-2);
+// ──────────────────────────────────────────────────────────
+// DOWNLOAD PROGRESS
+// ──────────────────────────────────────────────────────────
+function renderDownload(sidecarApps,msiApps){
+  const apps=[...sidecarApps,...msiApps];
+  if(!apps.length) return '';
+  const done=apps.filter(a=>a.InstallationState==='Completed').length;
+  return `<div class="coll-section">
+    <div class="coll-header" onclick="toggleColl(this)">
+      <span class="coll-title">⬇ Download Progress <span style="font-size:13px;font-weight:400;color:var(--text3)">(${done} of ${apps.length} downloaded)</span>${done===apps.length?'<span class="badge badge-green" style="margin-left:8px">'+done+' completed</span>':''}</span>
+      <span class="coll-chevron open">▾</span>
+    </div>
+    <div class="coll-body open">
+      ${apps.map(a=>{
+        const name=a.ResolvedName||a.DisplayName||a.FriendlyName||'Unknown App';
+        const state=a.InstallationState||a.State||'Unknown';
+        const isDone=state==='Completed';
+        const isErr=state==='Error'||state==='Failed';
+        const pct=isDone?100:state==='InProgress'?50:0;
+        const fillCls=isDone?'done':isErr?'err':'inprog';
+        return `<div class="prog-row">
+          <div class="prog-row-top">
+            <span class="prog-app-name">${esc(name)}</span>
+            <span class="badge ${isDone?'badge-green':isErr?'badge-red':'badge-blue'}">${isDone?'Completed':state}</span>
+          </div>
+          <div class="prog-bar"><div class="prog-fill ${fillCls}" style="width:${pct}%"></div></div>
+          <div class="prog-sub"><span>${esc(a.AppType||a.Publisher||'')}</span><span>${pct}%</span></div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
+
+// ──────────────────────────────────────────────────────────
+// INSTALL PROGRESS
+// ──────────────────────────────────────────────────────────
+function renderInstall(sidecarApps,msiApps){
+  const apps=[...sidecarApps,...msiApps];
+  if(!apps.length) return '';
+  const done=apps.filter(a=>a.InstallationState==='Completed').length;
+  return `<div class="coll-section">
+    <div class="coll-header" onclick="toggleColl(this)">
+      <span class="coll-title">✅ Install Progress <span style="font-size:13px;font-weight:400;color:var(--text3)">(${done} of ${apps.length} installed)</span>${done===apps.length?'<span class="badge badge-green" style="margin-left:8px">'+done+' completed</span>':''}</span>
+      <span class="coll-chevron open">▾</span>
+    </div>
+    <div class="coll-body open">
+      ${apps.map(a=>{
+        const name=a.ResolvedName||a.DisplayName||a.FriendlyName||'Unknown App';
+        const guid=a.AppGuid||a.ProductCode||'';
+        const state=a.InstallationState||a.State||'Unknown';
+        const isDone=state==='Completed';
+        const isErr=state==='Error'||state==='Failed';
+        return `<div class="prog-row">
+          <div class="prog-row-top">
+            <div>
+              <div class="prog-app-name">${esc(name)}</div>
+              <div style="font-size:11px;color:var(--text3);font-family:monospace;margin-top:2px">${esc(guid)}</div>
+              ${guid?`<a href="https://intune.microsoft.com/#view/Microsoft_Intune_Apps/SettingsMenu/~/0/appId/${guid}" target="_blank" style="font-size:11px;color:var(--blue)">Open in Intune ↗</a>`:''}
+            </div>
+            <span class="badge ${isDone?'badge-green':isErr?'badge-red':'badge-blue'}">${isDone?'Installed':state}</span>
+          </div>
+          ${a.HResult||a.ErrorCode?`<div style="font-size:11px;color:var(--red);margin-top:4px">Error: ${a.HResult||a.ErrorCode}</div>`:''}
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
+
+// ──────────────────────────────────────────────────────────
+// EVENT TIMELINE
+// ──────────────────────────────────────────────────────────
+function renderEvtTimeline(events){
+  if(!events.length) return '<div class="no-data">No events collected.</div>';
+
+  // Group by source (closest to their "phase grouping")
+  const sources=[...new Set(events.map(e=>e.Source||e.source||'Unknown'))];
+  const errC=events.filter(e=>e.Level==='Error'||e.Level==='Critical').length;
+  const warnC=events.filter(e=>e.Level==='Warning').length;
+
+  return `
+    <div class="evt-toolbar">
+      <input class="evt-search" placeholder="Search events..." oninput="searchEvts(this.value)">
+      <button class="sev-filter ${evtSevFilter==='all'?'active-info':''}" onclick="setSevFilter('all','info')">All (${events.length})</button>
+      <button class="sev-filter" onclick="setSevFilter('Info','info')">Info</button>
+      <button class="sev-filter" onclick="setSevFilter('Warning','warning')">Warning (${warnC})</button>
+      <button class="sev-filter" onclick="setSevFilter('Error','error')">Error (${errC})</button>
+    </div>
+    <div id="evtGroups">${renderEvtGroups(events)}</div>`;
+}
+
+function renderEvtGroups(events){
+  let filtered=[...events];
+  if(evtSevFilter!=='all') filtered=filtered.filter(e=>(e.Level||e.severity||'')==evtSevFilter);
+
+  // Group by source
+  const groups={};
+  filtered.forEach(e=>{
+    const g=e.Source||e.source||'General';
+    if(!groups[g]) groups[g]=[];
+    groups[g].push(e);
   });
 
-  drawLine(cpuData, 'rgb(59,130,246)');
-  drawLine(ramData, 'rgb(34,197,94)');
+  if(!Object.keys(groups).length) return '<div class="no-data">No events match this filter.</div>';
 
-  // Legend
-  ctx.fillStyle = 'rgb(59,130,246)'; ctx.fillRect(W-120, 8, 8, 8);
-  ctx.fillStyle = '#c8d6e5'; ctx.font = '10px JetBrains Mono'; ctx.fillText('CPU', W-108, 16);
-  ctx.fillStyle = 'rgb(34,197,94)'; ctx.fillRect(W-60, 8, 8, 8);
-  ctx.fillStyle = '#c8d6e5'; ctx.fillText('RAM', W-48, 16);
+  return Object.entries(groups).map(([grp,evts])=>`
+    <div class="evt-phase-group">
+      <div class="evt-phase-header" onclick="toggleEvtGroup(this)">
+        <span class="evt-phase-title">${esc(grp)} (${evts.length} events)</span>
+        <span class="evt-phase-chevron open">▾</span>
+      </div>
+      <div class="evt-group-body" style="display:block">
+        ${evts.slice(0,50).map((e,i)=>{
+          const sev=e.Level||e.severity||'Info';
+          const src=e.Source||e.source||'';
+          const type=e.EventId||e.eventType||sev;
+          const msg=e.Message||'';
+          const ts=e.TimeCreated||e.timestamp||'';
+          const idx=events.indexOf(e);
+          return `<div class="evt-card sev-${sev}">
+            <span class="evt-time">${fmtEvtTime(ts)}</span>
+            <span class="evt-sev ${sev}">${sev}</span>
+            <div style="flex:1;min-width:0">
+              <div class="evt-type">${esc(String(type))}</div>
+              <div class="evt-msg">${esc(msg.substring(0,200))}</div>
+              <div class="evt-meta">Source: ${esc(src)}${e.sequence?' · Seq: '+e.sequence:''}</div>
+            </div>
+            <button class="evt-details" onclick="showEvtDetail(${idx},event)">Details</button>
+          </div>`;
+        }).join('')}
+        ${evts.length>50?`<div style="padding:8px 16px;font-size:12px;color:var(--text3)">${evts.length-50} more events not shown.</div>`:''}
+      </div>
+    </div>`).join('');
 }
 
-// ============================================================
+function setSevFilter(f,cls){
+  evtSevFilter=f;
+  if(currentData) document.getElementById('evtGroups').innerHTML=renderEvtGroups(toArr(currentData.Events));
+  document.querySelectorAll('.sev-filter').forEach(b=>b.className='sev-filter');
+  event?.currentTarget?.classList.add('active-'+cls);
+}
+
+function searchEvts(val){
+  if(!currentData) return;
+  const events=toArr(currentData.Events).filter(e=>(e.Message||'').toLowerCase().includes(val.toLowerCase()));
+  document.getElementById('evtGroups').innerHTML=renderEvtGroups(events);
+}
+
+function toggleEvtGroup(header){
+  const body=header.nextElementSibling;
+  const chev=header.querySelector('.evt-phase-chevron');
+  const open=body.style.display!=='none';
+  body.style.display=open?'none':'block';
+  chev.classList.toggle('open',!open);
+}
+
+function showEvtDetail(idx,e){
+  e?.stopPropagation();
+  if(!currentData) return;
+  const ev=toArr(currentData.Events)[idx];
+  if(!ev) return;
+  document.getElementById('modalTitle').textContent=(ev.EventId||ev.eventType||'Event')+'';
+  document.getElementById('modalJson').textContent=JSON.stringify(ev,null,2);
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal(e){
+  if(!e||e.target===document.getElementById('modalOverlay')) document.getElementById('modalOverlay').classList.remove('open');
+}
+
+// ──────────────────────────────────────────────────────────
 // HELPERS
-// ============================================================
-function switchTab(tab) {
-  activeTab = tab;
-  if (currentData) renderSessionDetail(currentData);
+// ──────────────────────────────────────────────────────────
+function toggleColl(header){
+  const body=header.nextElementSibling;
+  const chev=header.querySelector('.coll-chevron');
+  const open=body.classList.toggle('open');
+  chev.classList.toggle('open',open);
 }
 
-function getOverallStatus(d) {
-  if (!d) return 'unknown';
-  if (d.IsTestRun) return 'test';
-  if (d.EnrollmentComplete) return 'complete';
-  const phases = d.ESPPhases || {};
-  const dp = typeof phases.DevicePreparation?.Status === 'string' ? phases.DevicePreparation.Status : '';
-  if (dp.includes('failed') || dp.includes('error')) return 'failed';
-  if (d.DurationSeconds > 0) return 'active';
+function ddRow(k,v){ return `<div class="dd-row"><div class="dd-key">${k}</div><div class="dd-val">${esc(String(v||'—'))}</div></div>`; }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function toArr(v){ if(!v) return []; if(Array.isArray(v)) return v; if(typeof v==='object') return Object.values(v); return []; }
+
+function getStatus(d){
+  if(!d) return 'unknown';
+  if(d.IsTestRun) return 'test';
+  if(d.EnrollmentComplete) return 'complete';
+  const dp=d.ESPPhases?.DevicePreparation?.Status||'';
+  if(typeof dp==='string'&&(dp.includes('failed')||dp.includes('error'))) return 'failed';
+  if(d.DurationSeconds>0) return 'active';
   return 'unknown';
 }
 
-function countApps(d) {
-  return toArr(d.SidecarWin32Apps).length + toArr(d.MSIApps).length;
+function statusInfo(st,isTest){
+  if(isTest) return{badgeCls:'badge-purple',badgeText:'Test'};
+  return{
+    complete:{badgeCls:'badge-green',badgeText:'Succeeded'},
+    active:{badgeCls:'badge-blue',badgeText:'In Progress'},
+    failed:{badgeCls:'badge-red',badgeText:'Failed'},
+    unknown:{badgeCls:'badge-gray',badgeText:'Unknown'},
+  }[st]||{badgeCls:'badge-gray',badgeText:'Unknown'};
 }
 
-function kv(label, value) {
-  return `<div class="kv-row"><div class="kv-key">${label}</div><div class="kv-val">${escHtml(String(value||'—'))}</div></div>`;
-}
+function fmtTime(ts){ if(!ts) return '—'; try{ return new Date(ts).toLocaleString('en-GB',{month:'numeric',day:'numeric',year:'2-digit',hour:'2-digit',minute:'2-digit'}); }catch{return ts;} }
+function fmtEvtTime(ts){ if(!ts) return '—'; try{ const d=new Date(ts); return d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); }catch{return ts;} }
+function fmtDur(s){ if(!s) return '—'; const m=Math.floor(s/60),sec=s%60; return m>0?`${m}m ${sec}s`:`${sec}s`; }
+function setStatus(ok,msg){ const d=document.getElementById('statusDot'); if(d){d.className='status-dot'+(ok?'':' err');} document.getElementById('statusText').textContent=msg; }
 
-function escHtml(str) {
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-function formatTime(ts) {
-  if (!ts) return '—';
-  try {
-    const d = new Date(ts);
-    return d.toLocaleString('en-GB',{month:'short',day:'2-digit',hour:'2-digit',minute:'2-digit'});
-  } catch { return ts; }
-}
-
-function formatDateTime(ts) {
-  if (!ts) return '—';
-  try {
-    const d = new Date(ts);
-    return d.toLocaleString('en-GB',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'});
-  } catch { return ts; }
-}
-
-function formatDuration(sec) {
-  if (!sec) return '—';
-  const m = Math.floor(sec/60), s = sec%60;
-  return m > 0 ? `${m}m ${s}s` : `${s}s`;
-}
-
-function renderBadgeLarge(status) {
-  const map = {
-    complete: ['badge-success','Complete'],
-    active:   ['badge-progress','Live'],
-    failed:   ['badge-error','Failed'],
-    test:     ['badge-test','Test Run'],
-    unknown:  ['badge-unknown','Unknown']
-  };
-  const [cls, label] = map[status] || map.unknown;
-  return `<span class="badge ${cls}" style="font-size:11px;padding:4px 10px;">${label}</span>`;
-}
-
-function updateStatus(ok, msg) {
-  document.getElementById('statusDot').style.background = ok ? 'var(--green)' : 'var(--red)';
-  document.getElementById('statusText').textContent = msg;
-}
-
-function updateLastRefresh() {
-  document.getElementById('lastRefresh').textContent = 'Updated ' + new Date().toLocaleTimeString();
-}
-
-// ============================================================
+// ──────────────────────────────────────────────────────────
 // INIT
-// ============================================================
+// ──────────────────────────────────────────────────────────
 loadSessions();
 </script>
 </body>
